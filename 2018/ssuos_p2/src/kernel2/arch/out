@@ -1,0 +1,60 @@
+10,44c10
+< //bool need_sched = false;
+< bool more_prio(const struct list_elem *a, const struct list_elem *b,void *aux);
+< 
+< struct process* get_next_proc(void)
+< {
+< 	bool found = false;
+< 	struct process *next;
+<     
+< 	next = cur_process;
+< 
+< #ifdef PROC_SLEEP
+< 	proc_wake();
+< #endif
+< 
+< #ifdef SCHED_PRIORITY
+< 	list_sort(&plist, more_prio, NULL);
+< #endif
+< 
+< 	while(!found)
+< 	{
+< 		if(&next->all_elem == list_back(&plist))
+< 		{
+< 			next = list_entry(list_front(&plist), struct process, all_elem);
+< 		}
+< 		else
+< 		{
+< 			next = list_entry(next->all_elem.next, struct process, all_elem);
+< 		}
+< 
+< 		if(next->state == PROC_RUN)
+< 			found = true;
+< 	}
+< 
+< 	return next;
+< }
+---
+> bool need_sched = false;
+48c14
+< 	struct process *cur;
+---
+> 	struct process *cur = cur_process;
+50d15
+< 	bool found = false;
+52,53c17,24
+< 	next = get_next_proc();
+< 	cur = cur_process;
+---
+> 	if(&cur->all_elem == list_back(&plist))
+> 	{
+> 		next = list_entry(list_front(&plist), struct process, all_elem);
+> 	}
+> 	else
+> 	{
+> 		next = list_entry(cur_process->all_elem.next, struct process, all_elem);
+> 	}
+58c29
+< 	cur_process->time_slice = 0;
+---
+> 

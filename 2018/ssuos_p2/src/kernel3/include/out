@@ -1,0 +1,30 @@
+12,26c12,14
+< #define iret()  __asm__ __volatile("leave\n\tiret")
+< 
+< #define reg_push() __asm__ __volatile(\
+< 		"pushl %eax\n\tpushl %ebx\n"\
+< 		"pushl %ecx\n\tpushl %edx\n"\
+< 		"pushl %ebp\n\tpushl %esi\n"\
+< 		"pushl %edi"\
+< 		)
+< 
+< #define reg_pop() __asm__ __volatile(\
+< 		"popl %edi\n\tpopl %esi\n" \
+< 		"popl %ebp\n\tpopl %edx\n" \
+< 		"popl %ecx\n\tpopl %ebx\n" \
+< 		"popl %eax" \
+< 		)     
+---
+> #define iret() \
+> 		__asm__ __volatile("leave"); \
+> 		__asm__ __volatile("iret")
+48c36
+< //void default_handler(void);
+---
+> void default_handler(void);
+50,51c38,39
+< //void timer_handler(void);
+< //void kbd_handler(void);
+---
+> void timer_handler(void);
+> void kbd_handler(void);
