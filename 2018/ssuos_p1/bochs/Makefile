@@ -1,0 +1,2 @@
+run:
+	bochs -f bochsrc
