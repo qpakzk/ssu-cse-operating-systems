@@ -2,6 +2,8 @@ org	0x7c00  
 
 [BITS 16]
 
+SECTION .text
+
 START:   
 		jmp		BOOT1_LOAD ;BOOT1_LOAD로 점프
 
