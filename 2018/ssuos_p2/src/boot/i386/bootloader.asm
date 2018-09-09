@@ -20,13 +20,27 @@ BOOT1_LOAD:
         int     0x13	
         jc      BOOT1_LOAD
 
-	call	CLEAR_SCREEN
-	call	PRINT_MENU
-
+; clear screen
+	mov	ax, 0xb800
+	mov	es, ax
 	mov	bx, 0
-	push	bx
+	mov	cx, 80*25*2
+
+CLS:
+	mov	[es:bx], ax
+	inc	bx
+	loop 	CLS
+
+; print all partitions
+	call PRINT_MENU
+
+; assign a partition number
+	mov	word [partition_num], 1
+
+; print checked circle
+	push	word [partition_num]
 	push	select
-	call	PRINT_MSG
+	call	PRINT
 	add	sp, 4
 
 GET_KEY:
@@ -34,7 +48,7 @@ GET_KEY:
 	int	0x16
 
 	cmp	ah, 0x1c
-	je	KERNEL_PRINT
+	je	KERNEL_LOAD
 
 	cmp	ah, 0x48
 	je	UP	
@@ -45,74 +59,45 @@ GET_KEY:
 	jne	GET_KEY
 
 UP:
-	call	PRINT_MENU
-	sub	bx, 1
-
-	cmp	bx, 0
+	mov	bx, word [partition_num]
+	dec	bx	
+	cmp	bx, 1
 	jge	MOVE_SELECT
-
-	mov	bx, 0
-	jmp	MOVE_SELECT
-
+	
+	mov	bx, 1
+	mov	word [partition_num], bx
+	jmp	GET_KEY
 DOWN:
-	call	PRINT_MENU
-	add	bx, 1
-
-	cmp	bx, 2
+	mov	bx, word [partition_num]
+	inc	bx
+	cmp	bx, 3
 	jle	MOVE_SELECT
 
-	mov	bx, 2
-	jmp	MOVE_SELECT	
-
+	mov	bx, 3
+	mov	word [partition_num], bx
+	jmp	GET_KEY
 MOVE_SELECT:
-	push	bx
+	mov	word [partition_num], bx
+	
+	call	PRINT_MENU
+	push	word [partition_num]
 	push 	select
-	call	PRINT_MSG
+	call	PRINT
 	add	sp, 4
 
 	jmp	GET_KEY
 
-CLEAR_SCREEN:
-	push 	bp
-	mov 	bp, sp
-	
-	push 	ax
-	push 	es
-	push 	bx
-	push 	cx
-
-	mov	ax, 0xb800
-	mov	es, ax
-	mov	bx, 0
-	mov	cx, 80*25*2
-
-CLS:
-	mov	[es:bx], ax
-	add	bx, 1
-loop 	CLS
-
-	pop 	cx
-	pop 	bx
-	pop 	es
-	pop 	ax
-
-	mov 	sp, bp
-	pop 	bp
-	ret
-
-PRINT_MSG:
+PRINT:
 	push 	bp
 	mov	bp, sp
-	
-	push	ax
-	push	es
-	push	si
-	push	di
+	pusha	
 
 	mov	ax, 0xb800
 	mov	es, ax
 
 	mov	ax, word [bp + 6]
+	dec	ax
+
 	mov	si, 160
 	mul	si
 	mov	di, ax
@@ -126,18 +111,14 @@ PRINT_LOOP:
 	
 	mov 	byte [es:di], al
 	mov 	byte [es:di + 1], 0x07
-
+	
+	inc 	si
 	add 	di, 2
-	add 	si, 1
 
 	jmp 	PRINT_LOOP
 PRINT_END:	
 	
-	pop 	di
-	pop 	si
-	pop 	es
-	pop 	ax
-
+	popa
 	mov 	sp, bp
 	pop 	bp
 	ret
@@ -145,62 +126,29 @@ PRINT_END:
 PRINT_MENU:
 	push bp
 	mov bp, sp
+	pusha
 
-	%assign	i 0
+	%assign	i 1
 
 	%rep 	3
 	push	i  
-	%if 	i == 0
+	%if 	i == 1
 		push 	ssuos_1
-	%elif 	i == 1
-		push 	ssuos_2
 	%elif 	i == 2
+		push 	ssuos_2
+	%elif 	i == 3
 		push 	ssuos_3
-	%else
-		jmp 	END
 	%endif
 
-	call 	PRINT_MSG
+	call 	PRINT
 	add 	sp, 4
 	%assign	i i + 1
 	%endrep
-END:	
+	
+	popa
 	mov sp, bp
 	pop bp
 	ret
-
-	
-KERNEL_PRINT:
-	cmp	bx, 0
-	je	KERNEL1
-	
-	cmp	bx, 1
-	je	KERNEL2	
-
-	cmp	bx, 2
-	je 	KERNEL3
-
-KERNEL1:
-	add	bx, 3
-	push	bx
-	push	kernel_1
-	jmp	RESULT
-KERNEL2:
-	add	bx, 3
-	push	bx
-	push	kernel_2
-	jmp	RESULT
-KERNEL3:
-	add	bx, 3
-	push	bx
-	push	kernel_3
-	jmp	RESULT
-
-RESULT:
-	call	PRINT_MSG
-	add	sp, 4
-
-	jmp	$
 
 KERNEL_LOAD:
 	mov     ax, 0x1000	
@@ -208,10 +156,34 @@ KERNEL_LOAD:
         mov     bx, 0x0		
 
         mov     ah, 2		
-        mov     al, 0x3f	
-        mov     ch, 0		
-        mov     cl, 0x6	
-        mov     dh, 0     
+        mov     al, 0x3f
+
+	mov	si, word [partition_num]
+	cmp	si, 1
+	je	ONE
+	
+	cmp	si, 2
+	je	TWO
+
+	cmp	si, 3
+	je	THREE
+
+ONE:	
+	mov     ch, 0		
+       	mov     cl, 0x6	
+       	mov     dh, 0
+	jmp	INT
+TWO:
+	mov	ch, 0x9
+	mov	cl, 0x2f
+	mov	dh, 0xe
+	jmp	INT
+THREE:
+	mov     ch, 0xe
+       	mov     cl, 0x7
+       	mov     dh, 0xe
+	jmp	INT
+INT:
         mov     dl, 0x80  
 
         int     0x13
@@ -225,9 +197,6 @@ ssuos_2 db "[ ] SSUOS_2",0
 ssuos_3 db "[ ] SSUOS_3",0
 ssuos_4 db "[ ] SSUOS_4",0
 partition_num : resw 1
-kernel_1 db "kernel 1", 0
-kernel_2 db "kernel 2", 0
-kernel_3 db "kernel 3", 0
 times   446-($-$$) db 0x00
 
 PTE:
