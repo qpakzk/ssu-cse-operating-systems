@@ -5,6 +5,12 @@ org	0x7c00  
 SECTION .text
 
 START:
+	; 스택 설정
+	mov	ax, 0x07c0
+	mov	ss, ax
+	mov	sp, 0x13FE
+	mov	bp, 0x13FE
+
 	jmp	BOOT1_LOAD ;BOOT1_LOAD로 점프
 
 BOOT1_LOAD:
