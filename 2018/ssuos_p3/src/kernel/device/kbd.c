@@ -67,14 +67,19 @@ void init_kbd(void)
 
 void UpdateKeyStat(BYTE Scancode)
 {
-	if(Scancode & 0x80)
+	if(Scancode & 0x80) // release
 	{
 		if(Scancode == 0xB6 || Scancode == 0xAA)
 		{
 			KStat.ShiftFlag = FALSE;
 		}
+
+		if(Scancode == 0x9D)
+		{
+			KStat.CtrlFlag = FALSE;
+		}
 	}
-	else
+	else // press
 	{
 		if(Scancode == 0x3A && KStat.CapslockFlag)
 		{
@@ -85,6 +90,21 @@ void UpdateKeyStat(BYTE Scancode)
 		else if(Scancode == 0x36 || Scancode == 0x2A)
 		{
 			KStat.ShiftFlag = TRUE;
+		}
+
+		if(Scancode == 0x1D)
+		{
+			KStat.CtrlFlag = TRUE;
+		}
+
+		if(Scancode == 0x26 && KStat.CtrlFlag) // ctrl + l
+		{
+
+		}
+
+		if(Scancode == 0x0F && KStat.CtrlFlag) // ctrl + tab
+		{
+
 		}
 	}
 
