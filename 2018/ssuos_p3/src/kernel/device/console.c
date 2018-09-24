@@ -147,7 +147,11 @@ void clrScreen(void)
 //Ctrl+l 화면 클리어 구현
 void clearScreen(void)
 {
-
+	int i;
+	int diff_y = Glob_y;
+	for(i = 0; i < diff_y; i++)
+		scroll();
+	Glob_y = 0;
 }
 
 void scroll(void) 

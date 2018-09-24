@@ -58,7 +58,7 @@ void init_kbd(void)
 	KStat.ScrolllockFlag = 0;
 	KStat.ExtentedFlag = 0;
 	KStat.PauseFlag = 0;
-
+	KStat.CtrlFlag = 0;
 	buf_head = 0;
 	buf_tail = 0;
 
@@ -97,15 +97,6 @@ void UpdateKeyStat(BYTE Scancode)
 			KStat.CtrlFlag = TRUE;
 		}
 
-		if(Scancode == 0x26 && KStat.CtrlFlag) // ctrl + l
-		{
-
-		}
-
-		if(Scancode == 0x0F && KStat.CtrlFlag) // ctrl + tab
-		{
-
-		}
 	}
 
 	if(Scancode == 0xE0)
@@ -216,13 +207,27 @@ void kbd_handler(struct intr_frame *iframe)
 		}
 		else if( !isFull() && asciicode != 0)
 		{
-			kbd_buf[buf_tail] = asciicode;
-			buf_tail = (buf_tail + 1) % BUFSIZ;
+			if(KStat.CtrlFlag == FALSE || data != 0x26 && data != 0x0F)
+			{
+				kbd_buf[buf_tail] = asciicode;
+				buf_tail = (buf_tail + 1) % BUFSIZ;
+			}
 		}
 
 #endif
 		
 	}
+
+	if(KStat.CtrlFlag == TRUE && data == 0x26)
+	{
+		clearScreen();
+	}
+
+	if(KStat.CtrlFlag == TRUE && data == 0x0F)
+	{
+
+	}
+
 	UpdateKeyStat(data);
 }
 
