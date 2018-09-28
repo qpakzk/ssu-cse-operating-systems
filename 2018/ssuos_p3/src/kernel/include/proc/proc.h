@@ -69,6 +69,6 @@ void proc_wake(void);
 void proc_sleep(unsigned ticks);
 void proc_block(void);			
 void proc_unblock(struct process* proc);
-
+void next_foreground_proc(void);
 void proc_print_data(void);		
 #endif

@@ -4,6 +4,7 @@
 #include <interrupt.h>
 #include <device/io.h>
 #include <ssulib.h>
+#include <proc/proc.h>
 
 static Key_Status KStat;
 
@@ -225,7 +226,7 @@ void kbd_handler(struct intr_frame *iframe)
 
 	if(KStat.CtrlFlag == TRUE && data == 0x0F)
 	{
-
+		next_foreground_proc();
 	}
 
 	UpdateKeyStat(data);
