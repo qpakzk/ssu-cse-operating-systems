@@ -16,8 +16,8 @@
 #define STACK_SIZE 512
 #define PROC_NUM_MAX 16
 
-struct list p_list;		// All Porcess List
-struct list r_list;		// Run Porcess List
+struct list p_list;		// All Process List
+struct list r_list;		// Run Process List
 struct list s_list;		// Sleep Process List
 struct list d_list;		// Deleted Process List 
 struct list f_list;		// Foreground Process List
