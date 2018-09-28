@@ -44,10 +44,10 @@ void init_console(void)
 
 void set_cursor(void)
 {
-    outb(0x3D4, 0x0F);
-    outb(0x3D5, (Glob_y*HSCREEN+Glob_x)&0xFF);
-    outb(0x3D4, 0x0E);
-    outb(0x3D5, (((Glob_y*HSCREEN+Glob_x)>>8)&0xFF));
+	outb(0x3D4, 0x0F);
+	outb(0x3D5, (Glob_y*HSCREEN+Glob_x)&0xFF);
+	outb(0x3D4, 0x0E);
+	outb(0x3D5, (((Glob_y*HSCREEN+Glob_x)>>8)&0xFF));
 }
 
 void PrintCharToScreen(int x, int y, const char *pString) 
@@ -110,7 +110,7 @@ void PrintChar(int x, int y, const char String)
 		pScreen += ((y+1) * 80);
 		Glob_x = 0;
 		Glob_y = y+1;
-	return;
+		return;
 	}
 	else {
 		if ((y > 24) && (x >= 0)) {
@@ -159,11 +159,11 @@ void scroll(void)
 #ifdef SCREEN_SCROLL
 	buf_w += HSCREEN;
 	buf_p += HSCREEN;
-	
+
 	while(buf_w > SCROLL_END)
 		buf_w -= SIZE_SCROLL;
 
-	
+
 	//clear line
 	int i;
 	char *buf_ptr = buf_w + SIZE_SCREEN;
@@ -173,19 +173,18 @@ void scroll(void)
 			buf_ptr -= SIZE_SCROLL;
 		*(buf_ptr++) = 0;
 	}
-		
-//
+
 #else
 	CHAR *pScreen = (CHAR *) VIDIO_MEMORY;
 	CHAR *pScrBuf = (CHAR *) (VIDIO_MEMORY + 2*80);
 	int i;
 	for (i = 0; i < 80*24; i++) {
-		    (*pScreen).bAtt = (*pScrBuf).bAtt;
-		        (*pScreen++).bCh = (*pScrBuf++).bCh;
+		(*pScreen).bAtt = (*pScrBuf).bAtt;
+		(*pScreen++).bCh = (*pScrBuf++).bCh;
 	}   
 	for (i = 0; i < 80; i++) {
-		    (*pScreen).bAtt = 0x07;
-		        (*pScreen++).bCh = ' ';
+		(*pScreen).bAtt = 0x07;
+		(*pScreen++).bCh = ' ';
 	} 
 #endif
 	Glob_y--;
@@ -227,7 +226,7 @@ int printk(const char *fmt, ...)
 	va_start(args, fmt);
 	len = vsprintk(buf, fmt, args);
 	va_end(args);
-	
+
 #ifdef SERIAL_STDOUT
 	printCharToSerial(buf);
 #endif
@@ -245,7 +244,7 @@ void scroll_screen(int offset)
 		return;
 
 	a_s = FALSE;
-	
+
 	tmp_buf_p = (char*)((int)buf_p + (HSCREEN * offset));
 	tmp_buf_w = buf_w + SIZE_SCREEN;
 	if(tmp_buf_w > SCROLL_END)
@@ -256,7 +255,7 @@ void scroll_screen(int offset)
 	else if(offset < 0 && tmp_buf_p <= tmp_buf_w && buf_p > tmp_buf_w) return;
 
 	buf_p = tmp_buf_p;
-	
+
 	if(buf_p >= SCROLL_END)
 		buf_p = (char*)((int)buf_p - SIZE_SCROLL);
 	else if(buf_p < buf_s)

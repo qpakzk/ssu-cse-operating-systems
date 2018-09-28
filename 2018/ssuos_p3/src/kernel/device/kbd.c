@@ -215,7 +215,7 @@ void kbd_handler(struct intr_frame *iframe)
 		}
 
 #endif
-		
+
 	}
 
 	if(KStat.CtrlFlag == TRUE && data == 0x26)

@@ -106,11 +106,11 @@ void init_proc()
 	}
 
 	pid_t pid = getValidPid(&i);
-    cur_process = &procs[i];
+	cur_process = &procs[i];
 
-    cur_process->pid = pid;
-    cur_process->parent = NULL;
-    cur_process->state = PROC_RUN;
+	cur_process->pid = pid;
+	cur_process->parent = NULL;
+	cur_process->state = PROC_RUN;
 	cur_process->priority = 0;
 	cur_process->stack = 0;
 	cur_process->pd = (void*)read_cr3();
@@ -181,7 +181,7 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 	p->pd = pd_create(pid);
 
 	//init stack
-    int *top = (int*)palloc_get_page();
+	int *top = (int*)palloc_get_page();
 	int stack = (int)top;
 	top = (int*)stack + STACK_SIZE - 1;
 
@@ -219,7 +219,7 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 
 void* getEIP()
 {
-    return __builtin_return_address(0);
+	return __builtin_return_address(0);
 }
 
 void  proc_start(void)
@@ -258,7 +258,7 @@ void proc_wake(void)
 	struct process* p;
 	unsigned long long t = get_ticks();
 
-    while(!list_empty(&s_list))
+	while(!list_empty(&s_list))
 	{
 		p = list_entry(list_front(&s_list), struct process, elem_stat);
 		if(p->time_sleep > t)
@@ -302,14 +302,14 @@ bool less_time_sleep(const struct list_elem *a, const struct list_elem *b,void *
 	struct process *p1 = list_entry(a, struct process, elem_stat);
 	struct process *p2 = list_entry(b, struct process, elem_stat);
 
-    return p1->time_sleep < p2->time_sleep;
+	return p1->time_sleep < p2->time_sleep;
 }
 
 bool more_prio(const struct list_elem *a, const struct list_elem *b,void *aux)
 {
 	struct process *p1 = list_entry(a, struct process, elem_stat);
 	struct process *p2 = list_entry(b, struct process, elem_stat);
-    return p1->priority > p2->priority;
+	return p1->priority > p2->priority;
 }
 
 
@@ -418,7 +418,7 @@ void shell_proc(void* aux)
 		{
 			; 
 		}
-		
+
 		for(i=0;buf[i] != '\n'; i++); 
 		for(i--; buf[i] == ' '; i--)
 			buf[i] = 0;
@@ -434,7 +434,7 @@ void shell_proc(void* aux)
 				printk("%s\n", cmdlist[i].cmd);
 			continue;
 		}
-		
+
 		for(i = 0; i < CMDNUM; i++)
 		{
 			if( strncmp(cmdlist[i].cmd, token[0], BUFSIZ) == 0)
@@ -471,7 +471,7 @@ void shell_proc(void* aux)
 
 void idle(void* aux)
 {
-	
+
 	proc_create(kernel1_proc, NULL, NULL);
 	proc_create(kernel2_proc, NULL, NULL);
 	proc_create(login_prompt,NULL,NULL);
@@ -503,13 +503,13 @@ void proc_print_data()
 
 	__asm__ __volatile("mov %ebx ,%eax");
 	__asm__ __volatile("mov %%eax ,%0": "=m"(b));
-	
+
 	__asm__ __volatile("mov %ecx ,%eax");
 	__asm__ __volatile("mov %%eax ,%0": "=m"(c));
-	
+
 	__asm__ __volatile("mov %edx ,%eax");
 	__asm__ __volatile("mov %%eax ,%0": "=m"(d));
-	
+
 	//ebp esi edi esp
 	__asm__ __volatile("mov %ebp ,%eax");
 	__asm__ __volatile("mov %%eax ,%0": "=m"(bp));
@@ -547,51 +547,51 @@ void next_foreground_proc(void){
 }
 
 void hexDump (void *addr, int len) {
-    int i;
-    unsigned char buff[17];
-    unsigned char *pc = (unsigned char*)addr;
+	int i;
+	unsigned char buff[17];
+	unsigned char *pc = (unsigned char*)addr;
 
-    if (len == 0) {
-        printk("  ZERO LENGTH\n");
-        return;
-    }
-    if (len < 0) {
-        printk("  NEGATIVE LENGTH: %i\n",len);
-        return;
-    }
+	if (len == 0) {
+		printk("  ZERO LENGTH\n");
+		return;
+	}
+	if (len < 0) {
+		printk("  NEGATIVE LENGTH: %i\n",len);
+		return;
+	}
 
-    // Process every byte in the data.
-    for (i = 0; i < len; i++) {
-        // Multiple of 16 means new line (with line offset).
+	// Process every byte in the data.
+	for (i = 0; i < len; i++) {
+		// Multiple of 16 means new line (with line offset).
 
-        if ((i % 16) == 0) {
-            // Just don't print ASCII for the zeroth line.
-            if (i != 0)
-                printk ("  %s\n", buff);
+		if ((i % 16) == 0) {
+			// Just don't print ASCII for the zeroth line.
+			if (i != 0)
+				printk ("  %s\n", buff);
 
-            // Output the offset.
-            printk ("  %04x ", i);
-        }
+			// Output the offset.
+			printk ("  %04x ", i);
+		}
 
-        // Now the hex code for the specific character.
-        printk (" %02x", pc[i]);
+		// Now the hex code for the specific character.
+		printk (" %02x", pc[i]);
 
-        // And store a printable ASCII character for later.
-        if ((pc[i] < 0x20) || (pc[i] > 0x7e))
-            buff[i % 16] = '.';
-        else
-            buff[i % 16] = pc[i];
-        buff[(i % 16) + 1] = '\0';
-    }
+		// And store a printable ASCII character for later.
+		if ((pc[i] < 0x20) || (pc[i] > 0x7e))
+			buff[i % 16] = '.';
+		else
+			buff[i % 16] = pc[i];
+		buff[(i % 16) + 1] = '\0';
+	}
 
-    // Pad out last line if not exactly 16 characters.
-    while ((i % 16) != 0) {
-        printk ("   ");
-        i++;
-    }
+	// Pad out last line if not exactly 16 characters.
+	while ((i % 16) != 0) {
+		printk ("   ");
+		i++;
+	}
 
-    // And print the final ASCII bit.
-    printk ("  %s\n", buff);
+	// And print the final ASCII bit.
+	printk ("  %s\n", buff);
 }
 
 
