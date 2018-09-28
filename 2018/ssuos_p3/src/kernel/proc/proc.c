@@ -482,10 +482,11 @@ void shell_proc(void* aux)
 
 void idle(void* aux)
 {
+	struct proc_option proc_opt = {100, TRUE};
 
 	proc_create(kernel1_proc, NULL, NULL);
 	proc_create(kernel2_proc, NULL, NULL);
-	proc_create(login_prompt,NULL,NULL);
+	proc_create(login_prompt, &proc_opt, NULL);
 
 	while(1) {  
 		if(cur_process->pid != 0) {

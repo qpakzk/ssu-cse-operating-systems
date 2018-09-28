@@ -5,12 +5,10 @@
 #include <device/io.h>
 #include <ssulib.h>
 #include <proc/proc.h>
+#include <string.h>
 
 static Key_Status KStat;
 
-static char kbd_buf[BUFSIZ];
-int buf_head, buf_tail;
-//위 전역변수를 사용하는 코드를 cur_foreground_process를 사용하는 코드로 변경
 extern struct process *cur_foreground_process;
 Kbd_buffer kbd_buffer[MAX_KBD_BUFFER];
 
@@ -60,8 +58,14 @@ void init_kbd(void)
 	KStat.ExtentedFlag = 0;
 	KStat.PauseFlag = 0;
 	KStat.CtrlFlag = 0;
-	buf_head = 0;
-	buf_tail = 0;
+
+	for(int i = 0; i < MAX_KBD_BUFFER; i++)
+	{
+		memset(kbd_buffer[i].buf, 0x00, MAX_KBD_BUFFER);
+		kbd_buffer[i].head = 0;
+		kbd_buffer[i].tail = 0;
+		kbd_buffer[i].used = false;
+	}
 
 	reg_handler(33, kbd_handler);
 }
@@ -164,12 +168,18 @@ BOOL ConvertScancodeToASCII(BYTE Scancode, BYTE *Asciicode)
 
 bool isFull()
 {
-	return (buf_head-1) % BUFSIZ == buf_tail;
+	int *head = &cur_foreground_process->kbd_buffer->head;
+	int *tail = &cur_foreground_process->kbd_buffer->tail;
+
+	return (*head-1) % BUFSIZ == *tail;
 }
 
 bool isEmpty()
 {
-	return buf_head == buf_tail;
+	int head = cur_foreground_process->kbd_buffer->head;
+	int tail = cur_foreground_process->kbd_buffer->tail;
+
+	return head == tail;
 }
 
 void kbd_handler(struct intr_frame *iframe)
@@ -210,8 +220,11 @@ void kbd_handler(struct intr_frame *iframe)
 		{
 			if(KStat.CtrlFlag == FALSE || data != 0x26 && data != 0x0F)
 			{
-				kbd_buf[buf_tail] = asciicode;
-				buf_tail = (buf_tail + 1) % BUFSIZ;
+				int *tail = &cur_foreground_process->kbd_buffer->tail;
+				char *kbd_buf = cur_foreground_process->kbd_buffer->buf;
+
+				kbd_buf[*tail] = asciicode;
+				*tail = (*tail + 1) % BUFSIZ;
 			}
 		}
 
@@ -234,12 +247,16 @@ void kbd_handler(struct intr_frame *iframe)
 
 char kbd_read_char()
 {
+	int *head = &cur_foreground_process->kbd_buffer->head;
+	char *kbd_buf = cur_foreground_process->kbd_buffer->buf;
+
 	if( isEmpty())
 		return -1;
 
 	char ret;
-	ret = kbd_buf[buf_head];
-	buf_head = (buf_head + 1)%BUFSIZ;
+	ret = kbd_buf[*head];
+	*head = (*head + 1)%BUFSIZ;
+
 	return ret;
 }
 
