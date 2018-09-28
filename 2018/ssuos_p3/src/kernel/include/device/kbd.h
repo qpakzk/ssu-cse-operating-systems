@@ -54,4 +54,5 @@ void init_kbd(void);
 void kbd_handler(struct intr_frame *iframe);
 
 char kbd_read_char();
+struct Kbd_buffer *get_kbd_buffer();
 #endif

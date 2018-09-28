@@ -6,6 +6,7 @@
 #include <interrupt.h>
 #include <proc/sched.h>
 #include <device/console.h>
+#include <device/kbd.h>
 #include <device/io.h>
 #include <syscall.h>
 #include <mem/paging.h>
@@ -208,7 +209,17 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 
 	//check option, set Console & Kbd
 	//list element, kbd_buffer, console
+	if(opt != NULL && opt->foreground == TRUE)
+	{
+		p->kbd_buffer = get_kbd_buffer();
+		p->console = get_console();
 
+		p->elem_foreground.prev = NULL;
+		p->elem_foreground.next = NULL;
+		list_push_back(&f_list, &p->elem_foreground);
+
+		cur_foreground_process = p;
+	}
 
 	list_push_back(&p_list, &p->elem_all);
 	list_push_back(&r_list, &p->elem_stat);
@@ -530,6 +541,9 @@ void proc_print_data()
 
 void next_foreground_proc(void){
 	struct list_elem *e;
+
+	if(list_empty(&f_list))
+		return;
 
 	//kbd
 	e = &cur_foreground_process->elem_foreground;

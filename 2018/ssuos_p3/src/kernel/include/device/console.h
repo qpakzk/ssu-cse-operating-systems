@@ -59,6 +59,7 @@ void clrScreen(void);
 void clearScreen(void);
 void scroll(void);
 int printk(const char *fmt, ...);
+struct Console *get_console(void);
 
 #ifdef SCREEN_SCROLL
 void refreshScreen(void);
