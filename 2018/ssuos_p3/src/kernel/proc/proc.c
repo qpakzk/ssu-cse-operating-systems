@@ -25,6 +25,7 @@ struct list f_list;		// Foreground Process List
 struct process procs[PROC_NUM_MAX];
 struct process *cur_process;
 struct process *cur_foreground_process;
+pid_t cur_foreground_pid;
 extern struct Console *cur_console;
 int pid_num_max;
 
@@ -219,6 +220,7 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 		list_push_back(&f_list, &p->elem_foreground);
 
 		cur_foreground_process = p;
+		cur_foreground_pid = cur_foreground_process->pid;
 	}
 
 	list_push_back(&p_list, &p->elem_all);
@@ -558,6 +560,7 @@ void next_foreground_proc(void){
 
 	//console
 	cur_console = cur_foreground_process->console;
+	cur_foreground_pid = cur_foreground_process->pid;
 
 }
 
