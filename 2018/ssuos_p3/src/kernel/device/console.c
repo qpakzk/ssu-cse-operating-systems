@@ -152,7 +152,6 @@ void clearScreen(void)
 	for(i = 0; i < diff_y; i++)
 		scroll();
 	Glob_y = 0;
-	set_cursor();
 }
 
 void scroll(void) 
@@ -189,6 +188,7 @@ void scroll(void)
 	} 
 #endif
 	Glob_y--;
+	set_cursor();
 
 }
 
