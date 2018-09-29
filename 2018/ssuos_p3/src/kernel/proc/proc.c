@@ -213,7 +213,14 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 	if(opt != NULL && opt->foreground == TRUE)
 	{
 		p->kbd_buffer = get_kbd_buffer();
-		p->console = get_console();
+		if(aux != NULL)
+		{
+			p->console = (struct Console *)aux;
+		}
+		else
+		{
+			p->console = get_console();
+		}
 
 		p->elem_foreground.prev = NULL;
 		p->elem_foreground.next = NULL;
@@ -221,8 +228,15 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 
 		cur_foreground_process = p;
 		cur_foreground_pid = cur_foreground_process->pid;
+		cur_console = cur_foreground_process->console;
 	}
-
+	else if(opt == NULL || opt == NULL && opt->foreground == FALSE)
+	{
+		if(p->parent->elem_foreground.prev != NULL)
+		{
+			p->console = p->parent->console;
+		}
+	}
 	list_push_back(&p_list, &p->elem_all);
 	list_push_back(&r_list, &p->elem_stat);
 
@@ -488,7 +502,7 @@ void idle(void* aux)
 
 	proc_create(kernel1_proc, NULL, NULL);
 	proc_create(kernel2_proc, NULL, NULL);
-	proc_create(login_prompt, &proc_opt, NULL);
+	proc_create(login_prompt, &proc_opt, (void *)cur_console);
 
 	while(1) {  
 		if(cur_process->pid != 0) {
