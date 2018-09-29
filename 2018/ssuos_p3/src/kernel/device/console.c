@@ -15,7 +15,7 @@ struct Console *cur_console;
 void init_console(void)
 {
 	next_line[0] = '\r';
-	next_line[1] = '\r';
+	next_line[1] = '\n';
 
 	for(int i = 0; i < MAX_CONSOLE_NUM; i++)
 	{
