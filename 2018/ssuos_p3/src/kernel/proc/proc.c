@@ -438,7 +438,7 @@ void shell_proc(void* aux)
 	{
 		proc_func *func;
 		int i, len;
-
+		while(cur_foreground_pid != cur_process->pid);
 		printk("> ");
 
 		while(getkbd(buf,BUFSIZ))
@@ -573,8 +573,8 @@ void next_foreground_proc(void){
 	cur_foreground_process = list_entry(e, struct process, elem_foreground);
 
 	//console
-	cur_console = cur_foreground_process->console;
 	cur_foreground_pid = cur_foreground_process->pid;
+	cur_console = cur_foreground_process->console;
 
 }
 
