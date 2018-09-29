@@ -54,7 +54,6 @@ struct process
 
 extern struct process *cur_process;	
 extern struct process *cur_foreground_process;
-extern pid_t cur_foreground_pid;
 
 typedef void proc_func(void* aux);	
 proc_func print_pid;			

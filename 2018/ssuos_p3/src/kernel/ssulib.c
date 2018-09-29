@@ -5,7 +5,7 @@
 #include <proc/proc.h>
 
 extern struct process *cur_process;
-extern pid_t cur_foreground_pid;
+extern struct process *cur_foreground_process;
 
 // void memcpy(void* from, void* to, uint32_t len)
 // {
@@ -50,7 +50,7 @@ bool getkbd(char *buf, int len)
 
 	len--;
 
-	while(cur_process->pid != cur_foreground_pid);
+	while(cur_process->pid != cur_foreground_process->pid);
 
 	for(; offset < len && buf[offset] != 0; offset++)
 		if(buf[offset] == '\n')
