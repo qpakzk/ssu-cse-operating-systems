@@ -48,14 +48,14 @@ void set_cursor(void)
 
 void PrintCharToScreen(int x, int y, const char *pString) 
 {
-	cur_console->Glob_x = x;
-	cur_console->Glob_y = y;
+	cur_process->console->Glob_x = x;
+	cur_process->console->Glob_y = y;
 	int i = 0;
 	while(pString[i] != 0)
 	{
-		PrintChar(cur_console->Glob_x++, cur_console->Glob_y, pString[i++]);
+		PrintChar(cur_process->console->Glob_x++, cur_process->console->Glob_y, pString[i++]);
 	}
-	cur_console->a_s = TRUE;
+	cur_process->console->a_s = TRUE;
 }
 
 void PrintChar(int x, int y, const char String) 
@@ -63,36 +63,36 @@ void PrintChar(int x, int y, const char String)
 #ifdef SCREEN_SCROLL
 	if (String == '\n') {
 		if((y+1) > VSCREEN) {
-			scroll();
+			scroll2();
 			y--;
 		}
-		cur_console->Glob_x = 0;
-		cur_console->Glob_y = y+1;
-		cur_console->sum_y++;
+		cur_process->console->Glob_x = 0;
+		cur_process->console->Glob_y = y+1;
+		cur_process->console->sum_y++;
 		return;
 	}
 	else if (String == '\b') {
-		if(cur_console->Glob_x == 0) return;
-		cur_console->Glob_x-=2;
-		cur_console->buf_w[y * HSCREEN + x - 1] = 0;
+		if(cur_process->console->Glob_x == 0) return;
+		cur_process->console->Glob_x-=2;
+		cur_process->console->buf_w[y * HSCREEN + x - 1] = 0;
 	}
 	else {
 		if ((y >= VSCREEN) && (x >= 0)) {
-			scroll();
+			scroll2();
 			x = 0;
 			y--;
 		}      	              	
 
-		char* b = &cur_console->buf_w[y * HSCREEN + x];
-		if(b >= SCROLL_END)
+		char* b = &cur_process->console->buf_w[y * HSCREEN + x];
+		if(b >= SCROLL_END2)
 			b-= SIZE_SCROLL;
 		*b = String;
 
-		if(cur_console->Glob_x >= HSCREEN)
+		if(cur_process->console->Glob_x >= HSCREEN)
 		{
-			cur_console->Glob_x = 0;
-			cur_console->Glob_y++;
-			cur_console->sum_y++;
+			cur_process->console->Glob_x = 0;
+			cur_process->console->Glob_y++;
+			cur_process->console->sum_y++;
 		}    
 	}
 #else
@@ -100,17 +100,17 @@ void PrintChar(int x, int y, const char String)
 
 	if (String == '\n') {
 		if((y+1) > 24) {
-			scroll();
+			scroll2();
 			y--;
 		}
 		pScreen += ((y+1) * 80);
-		cur_console->Glob_x = 0;
-		cur_console->Glob_y = y+1;
+		cur_process->console->Glob_x = 0;
+		cur_process->console->Glob_y = y+1;
 		return;
 	}
 	else {
 		if ((y > 24) && (x >= 0)) {
-			scroll();
+			scroll2();
 			x = 0; y--;
 		}                       
 
@@ -118,10 +118,10 @@ void PrintChar(int x, int y, const char String)
 		pScreen[0].bAtt = 0x07;
 		pScreen[0].bCh = String;
 
-		if(cur_console->Glob_x > 79)
+		if(cur_process->console->Glob_x > 79)
 		{
-			cur_console->Glob_x = 0;
-			cur_console->Glob_y++;
+			cur_process->console->Glob_x = 0;
+			cur_process->console->Glob_y++;
 		}    
 	}
 #endif
@@ -148,6 +148,41 @@ void clearScreen(void)
 	for(i = 0; i < diff_y; i++)
 		scroll();
 	cur_console->Glob_y = 0;
+}
+
+void scroll2(void)
+{
+#ifdef SCREEN_SCROLL
+	cur_process->console->buf_w += HSCREEN;
+	cur_process->console->buf_p += HSCREEN;
+
+	while(cur_process->console->buf_w > SCROLL_END2)
+		cur_process->console->buf_w -= SIZE_SCROLL;
+
+	//clear line
+	int i;
+	char *buf_ptr = cur_process->console->buf_w + SIZE_SCREEN;
+	for(i = 0; i < HSCREEN; i++)
+	{
+		if(buf_ptr > SCROLL_END2)
+			buf_ptr -= SIZE_SCROLL;
+		*(buf_ptr++) = 0;
+	}
+
+#else
+	CHAR *pScreen = (CHAR *) VIDIO_MEMORY;
+	CHAR *pScrBuf = (CHAR *) (VIDIO_MEMORY + 2*80);
+	int i;
+	for (i = 0; i < 80*24; i++) {
+		(*pScreen).bAtt = (*pScrBuf).bAtt;
+		(*pScreen++).bCh = (*pScrBuf++).bCh;
+	} 
+	for (i = 0; i < 80; i++) {
+		(*pScreen).bAtt = 0x07;
+		(*pScreen++).bCh = ' ';
+	} 
+#endif
+	cur_process->console->Glob_y--;
 }
 
 void scroll(void) 
@@ -219,7 +254,7 @@ int printk(const char *fmt, ...)
 	char buf[1024];
 	va_list args;
 	int len;
-
+	
 	va_start(args, fmt);
 	len = vsprintk(buf, fmt, args);
 	va_end(args);
@@ -227,8 +262,7 @@ int printk(const char *fmt, ...)
 #ifdef SERIAL_STDOUT
 	printCharToSerial(buf);
 #endif
-	PrintCharToScreen(cur_console->Glob_x, cur_console->Glob_y, buf);
-
+	PrintCharToScreen(cur_process->console->Glob_x, cur_process->console->Glob_y, buf);
 	return len;
 }
 

@@ -33,6 +33,7 @@ int Glob_y;
 
 #define buf_e (cur_console->buf_w + SIZE_NSCROLL)
 #define SCROLL_END (cur_console->buf_s + SIZE_SCROLL)
+#define SCROLL_END2 (cur_process->console->buf_s + SIZE_SCROLL)
 
 #define MAX_CONSOLE_NUM 10
 
@@ -55,6 +56,7 @@ void PrintChar(int x, int y, const char String);
 void clrScreen(void);
 void clearScreen(void);
 void scroll(void);
+void scroll2(void);
 int printk(const char *fmt, ...);
 struct Console *get_console(void);
 
