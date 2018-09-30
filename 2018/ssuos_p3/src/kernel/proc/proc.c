@@ -54,8 +54,26 @@ user_list temp_list = {"ssuos\n","oslab\n"};
 
 void loop_proc(void *aux)
 {
+	int i = 0;
+	int cnt = 0;
 	printk("loop start...\n");
-	while(1);
+	while(1)
+	{
+		if(cnt >= 5)
+		{
+			break;
+		}
+
+		if(i % 10000000 == 0)
+		{
+			printk("looping...%d\n", cnt);
+			cnt += 1;
+		}
+
+		i++;
+	}
+
+	exit(1);
 }
 
 void login_prompt(void * aux)
@@ -428,8 +446,9 @@ void shell_proc(void* aux)
 		{"ps", 1, ps_proc},
 		{"uname", 1, uname_proc},
 		{"create_shell", 0, create_shell_proc},
+		{"loop", 1, loop_proc},
 	};
-#define CMDNUM 4
+#define CMDNUM 5
 #define TOKNUM 10
 	char buf[BUFSIZ];
 	char token[TOKNUM][BUFSIZ];
