@@ -119,7 +119,7 @@ void init_proc()
 	cur_process->elem_all.next = NULL;
 	cur_process->elem_stat.prev = NULL;
 	cur_process->elem_stat.next = NULL;
-
+	cur_process->console = cur_console;
 
 	list_push_back(&p_list, &cur_process->elem_all);
 	list_push_back(&r_list, &cur_process->elem_stat);
@@ -500,7 +500,7 @@ void idle(void* aux)
 
 	proc_create(kernel1_proc, NULL, NULL);
 	proc_create(kernel2_proc, NULL, NULL);
-	proc_create(login_prompt, &proc_opt, (void *)cur_console);
+	proc_create(login_prompt, &proc_opt, (void *)cur_process->console);
 
 	while(1) {  
 		if(cur_process->pid != 0) {
