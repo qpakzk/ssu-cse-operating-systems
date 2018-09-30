@@ -119,6 +119,8 @@ void init_proc()
 	cur_process->elem_all.next = NULL;
 	cur_process->elem_stat.prev = NULL;
 	cur_process->elem_stat.next = NULL;
+	cur_process->elem_foreground.prev = NULL;
+	cur_process->elem_foreground.next = NULL;
 	cur_process->console = cur_console;
 
 	list_push_back(&p_list, &cur_process->elem_all);
@@ -228,13 +230,16 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 		cur_foreground_process = p;
 		cur_console = cur_foreground_process->console;
 	}
-	else if(opt == NULL || opt == NULL && opt->foreground == FALSE)
+
+	// background process
+	if(opt == NULL || opt->foreground == FALSE)
 	{
-		if(p->parent->elem_foreground.prev != NULL)
+		if(p->parent != NULL && p->parent->elem_foreground.prev != NULL)
 		{
 			p->console = p->parent->console;
 		}
 	}
+
 	list_push_back(&p_list, &p->elem_all);
 	list_push_back(&r_list, &p->elem_stat);
 
