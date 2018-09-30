@@ -6,6 +6,7 @@
 #include <device/pit.h>
 #include <stdarg.h>
 #include <string.h>
+#include <proc/proc.h>
 
 char next_line[2]; //"\r\n";
 struct Console console[MAX_CONSOLE_NUM];
@@ -34,6 +35,7 @@ void init_console(void)
 	}
 
 	cur_console = get_console();
+	cur_process->console = cur_console;
 }
 
 void set_cursor(void)
