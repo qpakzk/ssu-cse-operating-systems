@@ -37,7 +37,26 @@ struct process* sched_find_que(void) {
 	/*TODO :check the queue whether it is empty or not  
 	  and find each queue for the next process.
 	 */
-
+	while(1) 
+	{
+		if(list_empty (&level_que[1]))
+		{
+			if(list_empty(&level_que[2]))
+			{
+				continue;
+			}
+			else
+			{
+				result = get_next_proc(&level_que[2]);
+				break;
+			}
+		}
+		else
+		{
+				result = get_next_proc(&level_que[1]);
+				break;
+		}
+	}
 	return result;
 }
 
@@ -82,7 +101,8 @@ void schedule(void)
 		return;
 	}
 
-	next = get_next_proc(&level_que[1]);
+	next = sched_find_que();
+
 	scheduling = 0;
 	cur_process = next;
 
