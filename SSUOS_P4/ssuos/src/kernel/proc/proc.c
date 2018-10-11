@@ -53,8 +53,8 @@ void init_proc()
 	list_init(&plist);
 
 	for (i = 0; i < 3 ; i++) {
-			list_init(&level_que[i]);
-			printk("create level_que[%d]", i);
+		list_init(&level_que[i]);
+		printk("create level_que[%d]", i);
 	}
 
 	list_init(&slist);
@@ -178,7 +178,7 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 	p -> elem_stat.next = NULL;
 
 	list_push_back(&plist, &p->elem_all);
-	 //TODO : when create first , input the level 1 queue
+	//TODO : when create first , input the level 1 queue
 
 	intr_set_level (old_level);
 	return p->pid;
@@ -186,7 +186,7 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 
 void* getEIP()
 {
-    return __builtin_return_address(0);
+	return __builtin_return_address(0);
 }
 
 void  proc_start(void)
@@ -226,14 +226,14 @@ void proc_wake(void)
 	int old_level;
 	unsigned long long t = get_ticks();
 	struct list_elem *e;
-		for(e = list_begin (&slist); e != list_end (&slist);
-		e = list_next (e))
+	for(e = list_begin (&slist); e != list_end (&slist);
+			e = list_next (e))
 	{
 		struct process* p = list_entry(e, struct process, elem_stat);
 	}
-    while(!list_empty(&slist))
+	while(!list_empty(&slist))
 	{
-			p = list_entry(list_front(&slist), struct process, elem_stat); //pop the sleep list of sleeping proc
+		p = list_entry(list_front(&slist), struct process, elem_stat); //pop the sleep list of sleeping proc
 		if(p->time_sleep > t)
 			break;
 
@@ -243,7 +243,7 @@ void proc_wake(void)
 		list_push_back(&level_que[que_level], &p->elem_stat);
 		p->state = PROC_RUN;
 	}
-	
+
 }
 
 void proc_sleep(unsigned ticks)
@@ -254,7 +254,7 @@ void proc_sleep(unsigned ticks)
 	cur_process->state = PROC_STOP;
 	cur_process->time_slice = 0;
 	struct list_elem *e;
-	
+
 	list_remove(&cur_process->elem_stat); //remove queue list
 
 	list_insert_ordered(&slist, &cur_process->elem_stat,
@@ -290,7 +290,7 @@ bool more_prio(const struct list_elem *a, const struct list_elem *b,void *aux)
 {
 	struct process *p1 = list_entry(a, struct process, elem_stat);
 	struct process *p2 = list_entry(b, struct process, elem_stat);
-	
+
 	return p1->priority > p2->priority;
 }
 
@@ -300,10 +300,10 @@ void kernel1_proc(void* aux)
 	while(1)
 	{
 		if ((cur_process -> time_used >= 80) && (!passed)) {
-		
+
 			proc_sleep(60);
 			passed = 1;
-			
+
 		}
 		if (cur_process -> time_used >= 200)
 			proc_end();	
@@ -318,7 +318,7 @@ void kernel2_proc(void* aux)
 		if ((cur_process -> time_used >= 30) && (!passed)) {
 			proc_sleep(30);
 			passed = 1;
-			
+
 		}
 
 		if (cur_process -> time_used >= 120) {
@@ -337,7 +337,7 @@ void kernel3_proc(void* aux)
 		if ((cur_process -> time_used >= 100) && (!passed)) {
 			proc_sleep(200);
 			passed = 1;
-		
+
 		}
 
 		if (cur_process -> time_used >= 300) {
@@ -355,20 +355,20 @@ void kernel4_proc(void* aux)
 		if ((cur_process -> time_used >= 30) && (!passed1)){
 			proc_sleep(250);
 			passed1 = 1 ;
-		
+
 		}
-		
+
 		if ((cur_process -> time_used >= 80) && (!passed2)){
 			proc_sleep(300);
 			passed2 =1;
-			
+
 		}
 
 		if (cur_process -> time_used >=300){
 			proc_end();
 		}
 	}
- 
+
 }
 void kernel5_proc(void* aux)
 {
@@ -378,12 +378,12 @@ void kernel5_proc(void* aux)
 		if ((cur_process -> time_used >= 20) && (!passed1)){
 			proc_sleep(350);
 			passed1 = 1;
-			
+
 		}
 		if ((cur_process -> time_used >= 100) && (!passed2)){
 			proc_sleep(50);
 			passed2 = 1;
-		
+
 		}
 		if (cur_process -> time_used >=400)
 			proc_end();
@@ -398,22 +398,22 @@ void kernel6_proc(void* aux)
 		if ((cur_process -> time_used >= 10) && (!passed1)){
 			proc_sleep(10);
 			passed1 = 1;
-			
+
 		}
 		if ((cur_process -> time_used >= 30) && (!passed2)){
 			proc_sleep(20);
 			passed2 = 1;
-			
+
 		}
 		if ((cur_process -> time_used >= 100) && (!passed3)){
 			proc_sleep(200);
 			passed3 = 1;
-		
+
 		}
 		if ((cur_process -> time_used >= 150) && (!passed4)){
 			proc_sleep(10);
 			passed4 = 1;
-			
+
 		}
 
 		if (cur_process -> time_used >=200)
@@ -429,17 +429,17 @@ void kernel7_proc(void* aux)
 		if ((cur_process -> time_used >= 20) && (!passed1)){
 			proc_sleep(20);
 			passed1 = 1;
-			
+
 		}
 		if ((cur_process -> time_used >= 40) && (!passed2)){
 			proc_sleep(200);
 			passed2 = 1;
-			
+
 		}
 		if ((cur_process -> time_used >= 100) && (!passed3)){
 			proc_sleep(10);
 			passed3 = 1;
-			
+
 		}
 		if (cur_process -> time_used >=500)
 			proc_end();
@@ -454,7 +454,7 @@ void kernel8_proc(void* aux)
 		if ((cur_process -> time_used >= 20) && (!passed)){
 			proc_sleep(200);
 			passed = 1;
-			
+
 		}
 
 		if (cur_process -> time_used >=600)
@@ -470,7 +470,7 @@ void kernel9_proc(void* aux)
 		if ((cur_process -> time_used >= 30) && (!passed)){
 			proc_sleep(20);
 			passed = 1;
-			
+
 		}
 
 		if (cur_process -> time_used >=750)
@@ -486,7 +486,7 @@ void kernel10_proc(void* aux)
 		if ((cur_process -> time_used >= 200) && (!passed)){
 			proc_sleep(100);
 			passed = 1;
-			
+
 		}
 
 		if (cur_process -> time_used >=800)
@@ -524,13 +524,13 @@ void proc_print_data()
 
 	__asm__ __volatile("mov %ebx ,%eax");
 	__asm__ __volatile("mov %%eax ,%0": "=m"(b));
-	
+
 	__asm__ __volatile("mov %ecx ,%eax");
 	__asm__ __volatile("mov %%eax ,%0": "=m"(c));
-	
+
 	__asm__ __volatile("mov %edx ,%eax");
 	__asm__ __volatile("mov %%eax ,%0": "=m"(d));
-	
+
 	//ebp esi edi esp
 	__asm__ __volatile("mov %ebp ,%eax");
 	__asm__ __volatile("mov %%eax ,%0": "=m"(bp));
@@ -550,42 +550,42 @@ void proc_print_data()
 }
 
 void hexDump (void *addr, int len) {
-    int i;
-    unsigned char buff[17];
-    unsigned char *pc = (unsigned char*)addr;
+	int i;
+	unsigned char buff[17];
+	unsigned char *pc = (unsigned char*)addr;
 
-    if (len == 0) {
-        printk("  ZERO LENGTH\n");
-        return;
-    }
-    if (len < 0) {
-        printk("  NEGATIVE LENGTH: %i\n",len);
-        return;
-    }
+	if (len == 0) {
+		printk("  ZERO LENGTH\n");
+		return;
+	}
+	if (len < 0) {
+		printk("  NEGATIVE LENGTH: %i\n",len);
+		return;
+	}
 
-    for (i = 0; i < len; i++) {
-        if ((i % 16) == 0) {
-            if (i != 0)
-                printk ("  %s\n", buff);
+	for (i = 0; i < len; i++) {
+		if ((i % 16) == 0) {
+			if (i != 0)
+				printk ("  %s\n", buff);
 
-            printk ("  %04x ", i);
-        }
+			printk ("  %04x ", i);
+		}
 
-        printk (" %02x", pc[i]);
+		printk (" %02x", pc[i]);
 
-        if ((pc[i] < 0x20) || (pc[i] > 0x7e))
-            buff[i % 16] = '.';
-        else
-            buff[i % 16] = pc[i];
-        buff[(i % 16) + 1] = '\0';
-    }
+		if ((pc[i] < 0x20) || (pc[i] > 0x7e))
+			buff[i % 16] = '.';
+		else
+			buff[i % 16] = pc[i];
+		buff[(i % 16) + 1] = '\0';
+	}
 
-    while ((i % 16) != 0) {
-        printk ("   ");
-        i++;
-    }
+	while ((i % 16) != 0) {
+		printk ("   ");
+		i++;
+	}
 
-    printk ("  %s\n", buff);
+	printk ("  %s\n", buff);
 }
 
 
