@@ -179,7 +179,7 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 
 	list_push_back(&plist, &p->elem_all);
 	//TODO : when create first , input the level 1 queue
-
+	list_push_back(&level_que[1], &p->elem_stat);
 	intr_set_level (old_level);
 	return p->pid;
 }

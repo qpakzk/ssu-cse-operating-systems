@@ -71,9 +71,24 @@ void schedule(void)
 	  complete the schedule() code below.
 	 */
 	if ((cur -> pid) != 0) {
+		next = get_next_proc(&level_que[0]);
+		scheduling = 0;
+		cur_process = next;
+
+		intr_disable();
+		switch_process(cur, next);
+		intr_enable();
 
 		return;
 	}
+
+	next = get_next_proc(&level_que[1]);
+	scheduling = 0;
+	cur_process = next;
+
+	intr_disable();
+	switch_process(cur, next);
+	intr_enable();
 
 	switch (latest -> que_level){
 
