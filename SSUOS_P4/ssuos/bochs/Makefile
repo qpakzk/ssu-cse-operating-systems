@@ -20,4 +20,4 @@ clean:
 	rm -f disk.img
 	rm -f bochsout.txt
 	rm -f snapshot.txt
-
+	rm -f test.out
