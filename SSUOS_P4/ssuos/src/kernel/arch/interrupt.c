@@ -175,12 +175,21 @@ void default_handler(struct intr_frame *iframe)
 
 void timer_handler(struct intr_frame *iframe)
 {
+	int time_quantum;
 	ticks++;	
 	
 	if ((cur_process -> pid != 0) && (!scheduling)) {
 		cur_process->time_used++;	
 		cur_process->time_slice++;	
-		if(cur_process->time_slice >= TIMER_MAX)
+
+		if(cur_process->que_level == 1)
+			time_quantum = LV1_TIMER;
+		else if(cur_process->que_level == 2)
+			time_quantum = LV2_TIMER;
+		else
+			time_quantum = TIMER_MAX;
+
+		if(cur_process->time_slice >= time_quantum)
 			do_sched_on_return();
 	}
 
