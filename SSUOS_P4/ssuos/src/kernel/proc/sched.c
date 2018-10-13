@@ -104,6 +104,7 @@ void schedule(void)
 	proc_wake(); //wake up the processes
 
 	//print the info of all 10 proc.
+	intr_disable();
 	for (ele = list_begin(&plist); ele != list_end(&plist); ele = list_next(ele)) {
 		tmp = list_entry (ele, struct process, elem_all);
 		if ((tmp -> state == PROC_ZOMBIE) || 
@@ -121,6 +122,7 @@ void schedule(void)
 		}
 
 	}
+	intr_enable();
 
 	if (printed)
 		printk("\n");
