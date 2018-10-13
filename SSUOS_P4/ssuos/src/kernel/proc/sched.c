@@ -74,6 +74,7 @@ void schedule(void)
 	  complete the schedule() code below.
 	 */
 	if ((cur -> pid) != 0) {
+		latest = cur;
 		next = get_next_proc(&level_que[0]);
 
 		scheduling = 0;
@@ -87,7 +88,17 @@ void schedule(void)
 	}
 
 	switch (latest -> que_level){
-
+		case 1:
+			if(latest->state == PROC_RUN)
+				proc_que_leveldown(latest);
+			break;
+		case 2:
+			if(latest->state == PROC_RUN)
+			{
+				list_remove(&latest->elem_stat);
+				list_push_back(&level_que[2], &latest->elem_stat);
+			}
+			break;
 	}
 
 	proc_wake(); //wake up the processes
@@ -120,6 +131,8 @@ void schedule(void)
 		scheduling = 0;
 		cur_process = next;
 
+		latest->time_slice = 0;
+
 		intr_disable();
 		switch_process(cur, next);
 		intr_enable();
@@ -131,9 +144,18 @@ void schedule(void)
 void proc_que_levelup(struct process *cur)
 {
 	/*TODO : change the queue lv2 to queue lv1.*/
+	printk("Proc %d\'s in %d\n", cur->pid, cur->que_level);
+	if(cur->que_level == 1)
+		printk("Proc %d changes the queue(1->1)\n", cur->pid);
+	else if(cur->que_level == 2)
+		printk("Proc %d changes the queue(2->1)\n", cur->pid);
 }
 
 void proc_que_leveldown(struct process *cur)
 {
 	/*TODO : change the queue lv1 to queue lv2.*/
+	cur->que_level = 2;
+	printk("Proc %d changes the queue(1->2)\n", cur->pid);
+	list_remove(&cur->elem_stat);
+	list_push_back(&level_que[2], &cur->elem_stat);
 }

@@ -238,6 +238,8 @@ void proc_wake(void)
 			break;
 
 		list_remove(&p->elem_stat);
+		proc_que_levelup(p);
+
 		que_level = 1;
 		p->que_level = 1;
 		list_push_back(&level_que[que_level], &p->elem_stat);
@@ -249,6 +251,7 @@ void proc_wake(void)
 void proc_sleep(unsigned ticks)
 {
 	unsigned long cur_ticks = get_ticks();
+	printk("Proc %d I/O at %d\n", cur_process->pid, cur_ticks);
 
 	cur_process->time_sleep =  ticks + cur_ticks;
 	cur_process->state = PROC_STOP;
