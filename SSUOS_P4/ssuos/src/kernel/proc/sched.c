@@ -75,6 +75,7 @@ void schedule(void)
 	 */
 	if ((cur -> pid) != 0) {
 		next = get_next_proc(&level_que[0]);
+
 		scheduling = 0;
 		cur_process = next;
 
@@ -84,15 +85,6 @@ void schedule(void)
 
 		return;
 	}
-
-	next = sched_find_que();
-
-	scheduling = 0;
-	cur_process = next;
-
-	intr_disable();
-	switch_process(cur, next);
-	intr_enable();
 
 	switch (latest -> que_level){
 
@@ -125,6 +117,12 @@ void schedule(void)
 	if ((next = sched_find_que()) != NULL) {
 		printk("Selected process : %d\n", next -> pid);
 
+		scheduling = 0;
+		cur_process = next;
+
+		intr_disable();
+		switch_process(cur, next);
+		intr_enable();
 		return;
 	}
 	return;
