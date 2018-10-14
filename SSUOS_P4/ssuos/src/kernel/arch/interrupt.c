@@ -175,6 +175,7 @@ void default_handler(struct intr_frame *iframe)
 
 void timer_handler(struct intr_frame *iframe)
 {
+	//최대 타임 퀀텀 저장
 	int time_quantum;
 	ticks++;	
 	
@@ -182,13 +183,17 @@ void timer_handler(struct intr_frame *iframe)
 		cur_process->time_used++;	
 		cur_process->time_slice++;	
 
+		//레벨 1 큐의 타임 퀀텀을 LV1_TIMER으로 설정
 		if(cur_process->que_level == 1)
 			time_quantum = LV1_TIMER;
+		//레벨 2 큐의 타임 퀀텀을 LV2_TIMER으로 설정
 		else if(cur_process->que_level == 2)
 			time_quantum = LV2_TIMER;
+		//나머지는 TIMER_MAX로 설정
 		else
 			time_quantum = TIMER_MAX;
 
+		//최대 타임 퀀텀을 넘기면 스케줄링
 		if(cur_process->time_slice >= time_quantum)
 			do_sched_on_return();
 	}

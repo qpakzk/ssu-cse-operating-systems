@@ -179,6 +179,7 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 
 	list_push_back(&plist, &p->elem_all);
 	//TODO : when create first , input the level 1 queue
+	//레벨 1 큐에 프로세스를 담는다.
 	list_push_back(&level_que[1], &p->elem_stat);
 	intr_set_level (old_level);
 	return p->pid;
@@ -238,6 +239,7 @@ void proc_wake(void)
 			break;
 
 		list_remove(&p->elem_stat);
+		//블록 상태에서 깨어난 후 레벨 1 큐로 이동한다고 알려줌
 		proc_que_levelup(p);
 
 		que_level = 1;
@@ -251,6 +253,7 @@ void proc_wake(void)
 void proc_sleep(unsigned ticks)
 {
 	unsigned long cur_ticks = get_ticks();
+	//I/O가 걸리는 시작 시간 출력
 	printk("Proc %d I/O at %d\n", cur_process->pid, cur_ticks);
 
 	cur_process->time_sleep =  ticks + cur_ticks;
