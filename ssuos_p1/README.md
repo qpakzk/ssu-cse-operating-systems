@@ -3,7 +3,7 @@
 ## Install librandr-dev and g++
 
 ```sh
-$ sudo apt-get install libxrandr-dev g++
+$ sudo apt-get install libxrandr-dev g++ -y
 ```
 
 ## Install Bochs 
