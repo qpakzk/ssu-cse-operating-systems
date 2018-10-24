@@ -28,7 +28,7 @@ void ssuos_main(void)
 	main_init();
 
 	idle(NULL);
-	
+
 	return;
 }
 
@@ -41,9 +41,9 @@ void main_init(void)
 
 	print_contributors();
 
-    detect_mem();
-    printk("%s", "Memory Detecting\n");
-    printk("-Memory size = %u Kbytes\n", mem_size()/1024);
+	detect_mem();
+	printk("%s", "Memory Detecting\n");
+	printk("-Memory size = %u Kbytes\n", mem_size()/1024);
 
 	init_pit();	
 	printk("%s", "PIT Intialization\n");
