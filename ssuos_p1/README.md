@@ -28,7 +28,7 @@ $ ./configure --with-nogui --with-x11 --enable-gdb-stub
 * Compile
 
 ```sh
-$ sudo make
+$ make
 $ sudo make install
 ```
 
