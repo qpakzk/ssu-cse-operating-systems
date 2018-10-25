@@ -52,8 +52,22 @@ palloc_get_multiple (uint32_t page_type, size_t page_cnt)
 	if (page_cnt == 0)
 		return NULL;
 
+	kpage[page_alloc_index].type = page_type;
+	kpage[page_alloc_index].nalloc = page_cnt;
+	kpage[page_alloc_index].pid = cur_process->pid;
+	page_idx = 0;
 	switch(page_type){
 		case HEAP__: //(1)
+			for(i = 0; i <= page_alloc_index; i++) {
+				if(kpage[i].type == HEAP__)
+					page_idx += kpage[i].nalloc;
+			}
+
+			pages = (uint32_t *) (VKERNEL_HEAP_START - PAGE_SIZE * page_idx);
+			kpage[page_alloc_index].vaddr = pages;
+			memset((void*) (pages - PAGE_SIZE * page_cnt), 0, PAGE_SIZE * page_cnt);
+
+			page_alloc_index++;
 
 			break;
 		case STACK__: 
@@ -82,7 +96,7 @@ palloc_free_multiple (void *pages, size_t page_cnt)
 {
 
 	struct kpage *kpage = kpage_list;
-
+	page_alloc_index--;
 }
 
 /* Frees the page at PAGE. */
@@ -95,13 +109,16 @@ palloc_free_page (void *page)
 
 	uint32_t *
 va_to_ra (uint32_t *va){
-
-
+	if(va < (uint32_t *) RKERNEL_HEAP_START)
+		return va;
+	return VH_TO_RH(va);
 }
 
 	uint32_t *
 ra_to_va (uint32_t *ra){
-
+	if(ra < (uint32_t *) RKERNEL_HEAP_START)
+		return ra;
+	return RH_TO_VH(ra);
 }
 
 void palloc_pf_test(void)
