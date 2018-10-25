@@ -132,12 +132,12 @@ void  pt_copy(uint32_t *pd, uint32_t *dest_pd, uint32_t idx)
     {
       	if(pt[i] & PAGE_FLAG_PRESENT)
     	{
-//            new_pt = VH_TO_RH(new_pt);
-			new_pt = va_to_ra(new_pt);
-            dest_pd[idx] = (uint32_t)new_pt | (pd[idx] & ~PAGE_MASK_BASE & ~    PAGE_FLAG_ACCESS);
-//            new_pt = RH_TO_VH(new_pt);
-			new_pt = ra_to_va(new_pt);
-            new_pt[i] = pt[i];
+//		new_pt = VH_TO_RH(new_pt);
+		new_pt = va_to_ra(new_pt);
+		dest_pd[idx] = (uint32_t)new_pt | (pd[idx] & ~PAGE_MASK_BASE & ~    PAGE_FLAG_ACCESS);
+//		new_pt = RH_TO_VH(new_pt);
+		new_pt = ra_to_va(new_pt);
+		new_pt[i] = pt[i];
         }
     }
 }
@@ -163,7 +163,7 @@ uint32_t* pd_create (pid_t pid)
 //	pd_copy(RH_TO_VH((uint32_t*)read_cr3()), pd);
 	pd_copy(ra_to_va((uint32_t*)read_cr3()), pd);
 
-    //pd = VH_TO_RH(pd);
+//	pd = VH_TO_RH(pd);
 	pd = va_to_ra(pd);
 
 	return pd;
@@ -184,58 +184,58 @@ void pf_handler(struct intr_frame *iframe)
 #endif
 
 	uint32_t pdi, pti;
-    uint32_t *pta;
-    uint32_t *pda = (uint32_t*)read_cr3();
+	uint32_t *pta;
+	uint32_t *pda = (uint32_t*)read_cr3();
 
-    pdi = pde_idx_addr(fault_addr);
-    pti = pte_idx_addr(fault_addr);
+	pdi = pde_idx_addr(fault_addr);
+	pti = pte_idx_addr(fault_addr);
 
-    if(pda == PID0_PAGE_DIR){
-        write_cr0( read_cr0() & ~CR0_FLAG_PG);
-        pta = pt_pde(pda[pdi]);
-        write_cr0( read_cr0() | CR0_FLAG_PG);
-    }
-    else{
-        //pda = RH_TO_VH(pda);
+	if(pda == PID0_PAGE_DIR){
+		write_cr0( read_cr0() & ~CR0_FLAG_PG);
+		pta = pt_pde(pda[pdi]);
+		write_cr0( read_cr0() | CR0_FLAG_PG);
+	}
+	else{
+		//pda = RH_TO_VH(pda);
 		pda = ra_to_va(pda);
 
-        pta = pt_pde(pda[pdi]);
-    }
+		pta = pt_pde(pda[pdi]);
+	}
 
-    if(pta == NULL){
-        write_cr0( read_cr0() & ~CR0_FLAG_PG);
+	if(pta == NULL){
+		write_cr0( read_cr0() & ~CR0_FLAG_PG);
 
-        pta = palloc_get_page(HEAP__);
-//        pta = VH_TO_RH(pta);
+		pta = palloc_get_page(HEAP__);
+//		pta = VH_TO_RH(pta);
 		pta = va_to_ra(pta);
-        memset(pta,0,PAGE_SIZE);
-        
-        pda[pdi] = (uint32_t)pta | PAGE_FLAG_RW | PAGE_FLAG_PRESENT;
+		memset(pta,0,PAGE_SIZE);
+
+		pda[pdi] = (uint32_t)pta | PAGE_FLAG_RW | PAGE_FLAG_PRESENT;
 
 		fault_addr = (uint32_t*)((uint32_t)fault_addr & PAGE_MASK_BASE);
 
 //	        fault_addr = VH_TO_RH(fault_addr);
 		fault_addr = va_to_ra(fault_addr);
 
-        pta[pti] = (uint32_t)fault_addr | PAGE_FLAG_RW  | PAGE_FLAG_PRESENT;
+		pta[pti] = (uint32_t)fault_addr | PAGE_FLAG_RW  | PAGE_FLAG_PRESENT;
 
-//        pta = RH_TO_VH(pta);
+//		pta = RH_TO_VH(pta);
 		pta = ra_to_va(pta);
-        pdi = pde_idx_addr(pta);
-        pti = pte_idx_addr(pta);
+		pdi = pde_idx_addr(pta);
+		pti = pte_idx_addr(pta);
 
-        uint32_t *tmp_pta = pt_pde(pda[pdi]);
-        //tmp_pta[pti] = (uint32_t)VH_TO_RH(pta) | PAGE_FLAG_RW | PAGE_FLAG_PRESENT;
-        tmp_pta[pti] = (uint32_t)va_to_ra(pta) | PAGE_FLAG_RW | PAGE_FLAG_PRESENT;
+		uint32_t *tmp_pta = pt_pde(pda[pdi]);
+		//tmp_pta[pti] = (uint32_t)VH_TO_RH(pta) | PAGE_FLAG_RW | PAGE_FLAG_PRESENT;
+		tmp_pta[pti] = (uint32_t)va_to_ra(pta) | PAGE_FLAG_RW | PAGE_FLAG_PRESENT;
 
-        write_cr0( read_cr0() | CR0_FLAG_PG);
-    }
-    else{
-//        pta = RH_TO_VH(pta);
+		write_cr0( read_cr0() | CR0_FLAG_PG);
+	}
+	else{
+//		pta = RH_TO_VH(pta);
 		pta = ra_to_va(pta);
 		fault_addr = (uint32_t*)((uint32_t)fault_addr & PAGE_MASK_BASE);
-	       // fault_addr = VH_TO_RH(fault_addr);
+//		fault_addr = VH_TO_RH(fault_addr);
 		fault_addr = va_to_ra(fault_addr);
-        pta[pti] = (uint32_t)fault_addr | PAGE_FLAG_RW  | PAGE_FLAG_PRESENT;
+		pta[pti] = (uint32_t)fault_addr | PAGE_FLAG_RW  | PAGE_FLAG_PRESENT;
     }
 }
