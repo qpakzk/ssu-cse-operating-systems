@@ -82,10 +82,9 @@ palloc_get_multiple (uint32_t page_type, size_t page_cnt)
 
 			}
 
-			memset((void*) (pages), 0, PAGE_SIZE * page_cnt);
+			memset((void*)pages, 0, PAGE_SIZE * page_cnt);
 			break;
-		case STACK__: 
-			//(2)
+		case STACK__: //(2)
 
 			break;
 		default:
