@@ -54,23 +54,35 @@ palloc_get_multiple (uint32_t page_type, size_t page_cnt)
 
 	switch(page_type){
 		case HEAP__: //(1)
-			kpage[page_alloc_index].type = page_type;
-			kpage[page_alloc_index].nalloc = page_cnt;
-			kpage[page_alloc_index].pid = cur_process->pid;
+			for(i = 0; i < page_alloc_index; i++) {
+				if(kpage[i].type == FREE__ && page_cnt <= kpage[i].nalloc) {
+					kpage[i].type = HEAP__;
+					kpage[i].pid = cur_process->pid;
+					//nalloc doesn't change, because maintaining page size.
 
-			page_idx = 0;
-			for(i = 0; i <= page_alloc_index; i++) {
-				if(kpage[i].type == HEAP__)
-					page_idx += kpage[i].nalloc;
+					pages = kpage[i].vaddr;
+					break;
+				}
 			}
 
-			pages = (uint32_t *) (VKERNEL_HEAP_START - PAGE_SIZE * page_idx);
-			kpage[page_alloc_index].vaddr = pages;
-			page_alloc_index++;
-			
+			if(pages == NULL) {
+				kpage[page_alloc_index].type = page_type;
+				kpage[page_alloc_index].nalloc = page_cnt;
+				kpage[page_alloc_index].pid = cur_process->pid;
+
+				page_idx = 0;
+				for(i = 0; i <= page_alloc_index; i++) {
+					if(kpage[i].type == HEAP__)
+						page_idx += kpage[i].nalloc;
+				}
+
+				pages = (uint32_t *) (VKERNEL_HEAP_START - PAGE_SIZE * page_idx);
+				kpage[page_alloc_index].vaddr = pages;
+				page_alloc_index++;
+
+			}
+
 			memset((void*) (pages), 0, PAGE_SIZE * page_cnt);
-
-
 			break;
 		case STACK__: 
 			//(2)
@@ -96,9 +108,12 @@ palloc_get_page (uint32_t page_type)
 	void
 palloc_free_multiple (void *pages, size_t page_cnt) 
 {
-
 	struct kpage *kpage = kpage_list;
-
+	int i;
+	for(i = 0; i < page_alloc_index; i++) {
+		if(kpage[i].vaddr == (uint32_t *)pages)
+			kpage[i].type = FREE__;
+	}
 }
 
 /* Frees the page at PAGE. */
