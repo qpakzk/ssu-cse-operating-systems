@@ -126,16 +126,26 @@ palloc_free_page (void *page)
 
 	uint32_t *
 va_to_ra (uint32_t *va){
+	uint32_t *ra;
+
 	if(va < (uint32_t *) RKERNEL_HEAP_START)
-		return va;
-	return VH_TO_RH(va);
+		ra = va;
+	else
+		ra = VH_TO_RH(va);
+
+	return ra;
 }
 
 	uint32_t *
 ra_to_va (uint32_t *ra){
+	uint32_t *va;
+
 	if(ra < (uint32_t *) RKERNEL_HEAP_START)
-		return ra;
-	return RH_TO_VH(ra);
+		va = ra;
+	else
+		va = RH_TO_VH(ra);
+
+	return va;
 }
 
 void palloc_pf_test(void)
