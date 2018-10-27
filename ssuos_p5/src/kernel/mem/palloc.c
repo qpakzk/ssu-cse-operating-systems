@@ -56,7 +56,7 @@ palloc_get_multiple (uint32_t page_type, size_t page_cnt)
 		case HEAP__: //(1)
 			for(i = 0; i < page_alloc_index; i++) {
 				if(kpage[i].type == FREE__ && page_cnt <= kpage[i].nalloc) {
-					kpage[i].type = HEAP__;
+					kpage[i].type = page_type;
 					kpage[i].pid = cur_process->pid;
 					//nalloc doesn't change, because maintaining page size.
 
