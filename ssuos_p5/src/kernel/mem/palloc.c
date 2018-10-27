@@ -85,7 +85,35 @@ palloc_get_multiple (uint32_t page_type, size_t page_cnt)
 			memset((void*)pages, 0, PAGE_SIZE * page_cnt);
 			break;
 		case STACK__: //(2)
+			for(i = 0; i < page_alloc_index; i++) {
+				if(kpage[i].type == FREE__ && 2 <= kpage[i].nalloc) {
+					kpage[i].type = page_type;
+					kpage[i].pid = cur_process->pid;
+					//nalloc doesn't change, because maintaining page size.
 
+					pages = kpage[i].vaddr;
+					break;
+				}
+			}
+
+			if(pages == NULL) {
+				kpage[page_alloc_index].type = page_type;
+				kpage[page_alloc_index].nalloc = page_cnt;
+				kpage[page_alloc_index].pid = cur_process->pid;
+
+				page_idx = 0;
+				for(i = 0; i <= page_alloc_index; i++) {
+					if(kpage[i].type == STACK__)
+						page_idx += kpage[i].nalloc;
+				}
+
+				pages = (uint32_t *) (VKERNEL_STACK_ADDR - 0x2000 + PAGE_SIZE * page_idx);
+				kpage[page_alloc_index].vaddr = pages;
+				page_alloc_index++;
+
+			}
+
+			memset((void*)pages, 0, PAGE_SIZE * page_cnt);
 			break;
 		default:
 			return NULL;
