@@ -101,11 +101,11 @@ void init_proc()
 	}
 
 	pid_t pid = getValidPid(&i);
-    cur_process = &procs[i];
+	cur_process = &procs[i];
 
-    cur_process->pid = pid;
-    cur_process->parent = NULL;
-    cur_process->state = PROC_RUN;
+	cur_process->pid = pid;
+	cur_process->parent = NULL;
+	cur_process->state = PROC_RUN;
 	cur_process->priority = 0;
 	cur_process->stack = 0;
 	cur_process->pd = (void*)read_cr3();
@@ -172,7 +172,7 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 	p->simple_lock = 0;
 	p->child_pid = -1;
 
-    int *top = (int*)palloc_get_multiple(STACK__, 2);
+	int *top = (int*)palloc_get_multiple(STACK__, 2);
 	int stack = (int)(top-1);
 
 	*(--top) = (int)aux;		//argument for func
@@ -204,7 +204,7 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 
 void* getEIP()
 {
-    return __builtin_return_address(0);
+	return __builtin_return_address(0);
 }
 
 void  proc_start(void)
@@ -251,7 +251,7 @@ void proc_wake(void)
 	struct process* p;
 	unsigned long long t = get_ticks();
 
-    while(!list_empty(&s_list))
+	while(!list_empty(&s_list))
 	{
 		p = list_entry(list_front(&s_list), struct process, elem_stat);
 		if(p->time_sleep > t)
@@ -294,14 +294,14 @@ bool less_time_sleep(const struct list_elem *a, const struct list_elem *b,void *
 	struct process *p1 = list_entry(a, struct process, elem_stat);
 	struct process *p2 = list_entry(b, struct process, elem_stat);
 
-    return p1->time_sleep < p2->time_sleep;
+	return p1->time_sleep < p2->time_sleep;
 }
 
 bool more_prio(const struct list_elem *a, const struct list_elem *b,void *aux)
 {
 	struct process *p1 = list_entry(a, struct process, elem_stat);
 	struct process *p2 = list_entry(b, struct process, elem_stat);
-    return p1->priority > p2->priority;
+	return p1->priority > p2->priority;
 }
 
 
@@ -409,7 +409,7 @@ void shell_proc(void* aux)
 		{
 			;
 		}
-		
+
 		for(i=0;buf[i] != '\n'; i++); 
 		for(i--; buf[i] == ' '; i--)
 			buf[i] = 0;
@@ -425,7 +425,7 @@ void shell_proc(void* aux)
 				printk("%s\n", cmdlist[i].cmd);
 			continue;
 		}
-		
+
 		for(i = 0; i < CMDNUM; i++)
 		{
 			if( strncmp(cmdlist[i].cmd, token[0], BUFSIZ) == 0)
@@ -462,7 +462,7 @@ void shell_proc(void* aux)
 
 void idle(void* aux)
 {
-	
+
 	proc_create(kernel1_proc, NULL, NULL);
 	proc_create(kernel2_proc, NULL, NULL);
 	proc_create(login_prompt,NULL,NULL);
@@ -494,13 +494,13 @@ void proc_print_data()
 
 	__asm__ __volatile("mov %ebx ,%eax");
 	__asm__ __volatile("mov %%eax ,%0": "=m"(b));
-	
+
 	__asm__ __volatile("mov %ecx ,%eax");
 	__asm__ __volatile("mov %%eax ,%0": "=m"(c));
-	
+
 	__asm__ __volatile("mov %edx ,%eax");
 	__asm__ __volatile("mov %%eax ,%0": "=m"(d));
-	
+
 	//ebp esi edi esp
 	__asm__ __volatile("mov %ebp ,%eax");
 	__asm__ __volatile("mov %%eax ,%0": "=m"(bp));
@@ -520,43 +520,43 @@ void proc_print_data()
 }
 
 void hexDump (void *addr, int len) {
-    int i;
-    unsigned char buff[17];
-    unsigned char *pc = (unsigned char*)addr;
+	int i;
+	unsigned char buff[17];
+	unsigned char *pc = (unsigned char*)addr;
 
-    if (len == 0) {
-        printk("  ZERO LENGTH\n");
-        return;
-    }
-    if (len < 0) {
-        printk("  NEGATIVE LENGTH: %i\n",len);
-        return;
-    }
+	if (len == 0) {
+		printk("  ZERO LENGTH\n");
+		return;
+	}
+	if (len < 0) {
+		printk("  NEGATIVE LENGTH: %i\n",len);
+		return;
+	}
 
-    for (i = 0; i < len; i++) {
+	for (i = 0; i < len; i++) {
 
-        if ((i % 16) == 0) {
-            if (i != 0)
-                printk ("  %s\n", buff);
+		if ((i % 16) == 0) {
+			if (i != 0)
+				printk ("  %s\n", buff);
 
-            printk ("  %04x ", i);
-        }
+			printk ("  %04x ", i);
+		}
 
-        printk (" %02x", pc[i]);
+		printk (" %02x", pc[i]);
 
-        if ((pc[i] < 0x20) || (pc[i] > 0x7e))
-            buff[i % 16] = '.';
-        else
-            buff[i % 16] = pc[i];
-        buff[(i % 16) + 1] = '\0';
-    }
+		if ((pc[i] < 0x20) || (pc[i] > 0x7e))
+			buff[i % 16] = '.';
+		else
+			buff[i % 16] = pc[i];
+		buff[(i % 16) + 1] = '\0';
+	}
 
-    while ((i % 16) != 0) {
-        printk ("   ");
-        i++;
-    }
+	while ((i % 16) != 0) {
+		printk ("   ");
+		i++;
+	}
 
-    printk ("  %s\n", buff);
+	printk ("  %s\n", buff);
 }
 
 
