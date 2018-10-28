@@ -85,40 +85,19 @@ palloc_get_multiple (uint32_t page_type, size_t page_cnt)
 			memset((void*)pages, 0, PAGE_SIZE * page_cnt);
 			break;
 		case STACK__: //(2)
-			for(i = 0; i < page_alloc_index; i++) {
-				if(kpage[i].type == FREE__ && 2 <= kpage[i].nalloc) {
-					kpage[i].type = page_type;
-					kpage[i].pid = cur_process->pid;
-					//nalloc doesn't change, because maintaining page size.
+			kpage[page_alloc_index].type = page_type; // STACK__
+			kpage[page_alloc_index].nalloc = page_cnt; // 2
+			kpage[page_alloc_index].pid = cur_process->pid;
 
-					pages = kpage[i].vaddr;
-					break;
-				}
-			}
+			pages = (uint32_t *)VKERNEL_STACK_ADDR; // 0x40002000
+			kpage[page_alloc_index].vaddr = pages - 0x2000;
+			page_alloc_index++;
 
-			if(pages == NULL) {
-				kpage[page_alloc_index].type = page_type;
-				kpage[page_alloc_index].nalloc = page_cnt;
-				kpage[page_alloc_index].pid = cur_process->pid;
-
-				page_idx = 0;
-				for(i = 0; i <= page_alloc_index; i++) {
-					if(kpage[i].type == STACK__)
-						page_idx += kpage[i].nalloc;
-				}
-
-				pages = (uint32_t *) (VKERNEL_STACK_ADDR - 0x2000 + PAGE_SIZE * page_idx);
-				kpage[page_alloc_index].vaddr = pages;
-				page_alloc_index++;
-
-			}
-
-			memset((void*)pages, 0, PAGE_SIZE * page_cnt);
+			memset((void*)(pages - 0x2000), 0, PAGE_SIZE * page_cnt);
 			break;
 		default:
 			return NULL;
 	}
-
 
 	return (uint32_t*)pages; 
 }
@@ -153,26 +132,52 @@ palloc_free_page (void *page)
 
 	uint32_t *
 va_to_ra (uint32_t *va){
+	int i;
+	struct kpage *kpage = kpage_list;
+	size_t page_idx;
 	uint32_t *ra;
 
 	if(va < (uint32_t *) RKERNEL_HEAP_START)
-		ra = va;
-	else
-		ra = VH_TO_RH(va);
+		return va;
 
-	return ra;
+	page_idx = 0;
+	for(i = 0; i < page_alloc_index; i++) {
+		if(kpage[i].type == HEAP__) {
+			if(kpage[i].vaddr == va) {
+				ra = (uint32_t *)(VKERNEL_HEAP_START - ((uint32_t)va + PAGE_SIZE * kpage[i].nalloc) + RKERNEL_HEAP_START);
+				return ra;
+			}
+		}
+		else if(kpage[i].type == STACK__) {
+			if(kpage[i].vaddr == va && kpage[i].pid == cur_process->pid) {
+				ra = (uint32_t *)(RKERNEL_HEAP_START + page_idx * PAGE_SIZE);
+				return ra;
+			}
+		}
+		page_idx += kpage[i].nalloc;
+	}
+	return NULL;
 }
 
 	uint32_t *
 ra_to_va (uint32_t *ra){
+	int i;
+	struct kpage *kpage = kpage_list;
 	uint32_t *va;
 
 	if(ra < (uint32_t *) RKERNEL_HEAP_START)
 		va = ra;
-	else
-		va = RH_TO_VH(ra);
 
-	return va;
+	for(i = 0; i < page_alloc_index; i++) {
+		if(kpage[i].type == HEAP__) {
+			va = (uint32_t *)(VKERNEL_HEAP_START - ((uint32_t)ra - RKERNEL_HEAP_START)- PAGE_SIZE * kpage[i].nalloc);
+			return va;
+		}
+		else if(kpage[i].type == STACK__)
+			return (uint32_t *)(VKERNEL_STACK_ADDR - 0x2000);
+	}
+
+	return NULL;
 }
 
 void palloc_pf_test(void)
