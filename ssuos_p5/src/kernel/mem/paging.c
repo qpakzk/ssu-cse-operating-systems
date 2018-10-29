@@ -169,7 +169,15 @@ uint32_t* pd_create (pid_t pid)
 	return pd;
 }
 void child_stack_reset(pid_t pid){// (2)
-		
+	uint32_t* pd = get_cur_pd();
+	uint32_t temp;
+
+	pd = ra_to_va(pd);
+
+	temp = pd[0];
+	pd[0] = temp;
+
+	pd[256] = 0;
 }
 
 void pf_handler(struct intr_frame *iframe)
