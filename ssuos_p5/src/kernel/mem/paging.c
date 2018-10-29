@@ -126,20 +126,20 @@ void  pt_copy(uint32_t *pd, uint32_t *dest_pd, uint32_t idx)
 
 //	pt = RH_TO_VH(pt);
 	pt = ra_to_va(pt);
-    new_pt = palloc_get_page(HEAP__);
- 
-    for(i = 0; i<1024; i++)
-    {
-      	if(pt[i] & PAGE_FLAG_PRESENT)
-    	{
-//		new_pt = VH_TO_RH(new_pt);
-		new_pt = va_to_ra(new_pt);
-		dest_pd[idx] = (uint32_t)new_pt | (pd[idx] & ~PAGE_MASK_BASE & ~    PAGE_FLAG_ACCESS);
-//		new_pt = RH_TO_VH(new_pt);
-		new_pt = ra_to_va(new_pt);
-		new_pt[i] = pt[i];
-        }
-    }
+	new_pt = palloc_get_page(HEAP__);
+	//printk("new_pt=%#X\n", new_pt);
+	for(i = 0; i<1024; i++)
+	{
+		if(pt[i] & PAGE_FLAG_PRESENT)
+		{
+//			new_pt = VH_TO_RH(new_pt);
+			new_pt = va_to_ra(new_pt);
+			dest_pd[idx] = (uint32_t)new_pt | (pd[idx] & ~PAGE_MASK_BASE & ~    PAGE_FLAG_ACCESS);
+//			new_pt = RH_TO_VH(new_pt);
+			new_pt = ra_to_va(new_pt);
+			new_pt[i] = pt[i];
+		}
+	}
 }
 
 /*
