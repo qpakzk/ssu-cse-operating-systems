@@ -173,6 +173,9 @@ void child_stack_reset(pid_t pid){// (2)
 	uint32_t temp;
 
 	pd = ra_to_va(pd);
+	
+	//자식 프로세스의 스택 초기화
+	//부모 페이지 디렉토리 인덱스 256을 0으로 초기화
 	if(pid == 0 && pd[0] != NULL)
 		pd[256] = 0;
 }

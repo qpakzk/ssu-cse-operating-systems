@@ -174,13 +174,17 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 	p->simple_lock = 0;
 	p->child_pid = -1;
 
+	//부모 프로세스 pid 임시 저장
 	temp_pid = cur_process->pid;
+	//페이지 디렉토리 리셋
 	child_stack_reset(temp_pid);
+	//자식 프로세스의 pid로 변환
 	cur_process->pid = pid;
-
+	
+	//자식 프로세스의 스택으로 할당
 	int *top = (int*)palloc_get_multiple(STACK__, 2);
 
-
+	//부모 프로세스의 pid로 반환
 	cur_process->pid = temp_pid;
 
 	int stack = (int)(top-1);

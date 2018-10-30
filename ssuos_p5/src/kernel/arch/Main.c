@@ -75,7 +75,7 @@ void main_init(void)
 	sema_self_test();
 	printk("========== initialization complete ==========\n\n");
 
-	while(1); //(2)
+//	while(1); //(2)
 #ifdef SCREEN_SCROLL
 	refreshScreen();
 #endif
