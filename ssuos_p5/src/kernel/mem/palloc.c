@@ -90,10 +90,10 @@ palloc_get_multiple (uint32_t page_type, size_t page_cnt)
 			kpage[page_alloc_index].pid = cur_process->pid;
 
 			pages = (uint32_t *)VKERNEL_STACK_ADDR; // 0x40002000
-			kpage[page_alloc_index].vaddr = pages - 0x2000;
+			kpage[page_alloc_index].vaddr = pages - page_cnt * PAGE_SIZE;
 			page_alloc_index++;
 
-			memset((void*)(pages - 0x2000), 0, PAGE_SIZE * page_cnt);
+			memset((void*)(pages - page_cnt * PAGE_SIZE), 0, PAGE_SIZE * page_cnt);
 			break;
 		default:
 			return NULL;
@@ -174,7 +174,7 @@ ra_to_va (uint32_t *ra){
 			return va;
 		}
 		else if(kpage[i].type == STACK__)
-			return (uint32_t *)(VKERNEL_STACK_ADDR - 0x2000);
+			return (uint32_t *)(VKERNEL_STACK_ADDR);
 	}
 
 	return NULL;
