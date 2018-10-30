@@ -171,7 +171,6 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 	p->time_used = 0;
 	p->time_sched= 0;
 	p->parent = cur_process;
-	cur_process->child_pid = pid;
 	p->simple_lock = 0;
 	p->child_pid = -1;
 
@@ -180,6 +179,7 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 	cur_process->pid = pid;
 
 	int *top = (int*)palloc_get_multiple(STACK__, 2);
+
 
 	cur_process->pid = temp_pid;
 
