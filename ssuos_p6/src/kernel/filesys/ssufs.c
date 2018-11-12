@@ -78,10 +78,9 @@ int ssufs_load_inodetable(struct ssufs_superblock *sb)
 		dirent.d_ino = INODE_ROOT;
 		dirent.d_type = SSU_DIR_TYPE;
 		memcpy(dirent.d_name, ".", sizeof("."));
-		memcpy(tmpblock, (char *)&dirent, sizeof(struct dirent));
+		ssufs_inode_write(root_inode, 0, (char *)&dirent, sizeof(struct dirent));
 		memcpy(dirent.d_name, "..", sizeof(".."));
-		memcpy(tmpblock+sizeof(struct dirent), (char *)&dirent, sizeof(struct dirent));
-		ssufs_inode_write(root_inode, 0, tmpblock, sizeof(struct dirent)*2);
+		ssufs_inode_write(root_inode, root_inode->i_size, (char *)&dirent, sizeof(struct dirent));
 
 		ssufs_sync_bitmapblock(sb);
 		ssufs_sync_inodetable(sb);
@@ -210,7 +209,7 @@ int ssufs_inode_write(struct ssufs_inode *inode, uint32_t offset, char *buf, uin
 		memset(tmpblock, 0, SSU_BLOCK_SIZE);
 		if(blkoff < NUM_DIRECT){//direct
 			if(inode->i_direct[blkoff] == 0){//need to bitmap_alloc
-				block_index = bitmap_alloc(inode->ssufs_sb->inodemap);
+				block_index = bitmap_alloc(inode->ssufs_sb->blkmap);
 				block_index += SSU_DATA_BLOCK(inode->ssufs_sb->lba);
 
 				if(block_index == -1){
