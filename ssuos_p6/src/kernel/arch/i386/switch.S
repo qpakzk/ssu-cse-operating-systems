@@ -1,0 +1,49 @@
+//ARG1 address from ebp
+.set ARG_CUR, 8
+.set ARG_NEXT, 12
+
+.global switch_process
+
+.func switch_process
+switch_process:
+
+	//save register
+	pushl %ebp
+	movl %esp, %ebp
+
+	pushl %eax
+	pushl %ebx
+	pushl %ecx
+	pushl %edx
+	pushl %esi
+	pushl %edi
+
+	//offset of stack in struct process
+.global process_stack_ofs
+	mov process_stack_ofs, %edx
+	mov process_stack_ofs, %ebx
+	addl $4, %ebx
+
+	//save stack
+	movl ARG_CUR(%ebp), %eax
+	movl %esp, (%eax, %edx, 1)
+	
+	//load stack
+	movl ARG_NEXT(%ebp), %eax
+	
+	movl (%eax, %edx, 1), %esp
+	movl (%eax, %ebx, 1), %ecx
+	movl %ecx, %cr3
+
+	//load register
+	popl %edi		
+	popl %esi
+	popl %edx
+	popl %ecx
+	popl %ebx
+	popl %eax
+
+	popl %ebp
+
+	ret
+
