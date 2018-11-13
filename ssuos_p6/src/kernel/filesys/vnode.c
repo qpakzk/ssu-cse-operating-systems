@@ -6,7 +6,10 @@
 
 struct vnode *vnode_alloc(){
 	int i;
-
+	/*
+	 * v_no가 0(NULL)일 때 할당되지 않은 vnode로 판단하기 때문에
+	 * v_no를 1번부터 할당한다.
+	 */
 	for(i=1; i < NUM_VNODE; i++){
 		if(vnode_table[i].v_no == NULL){
 			vnode_table[i].v_no = i;
