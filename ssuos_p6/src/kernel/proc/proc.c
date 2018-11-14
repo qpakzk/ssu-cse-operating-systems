@@ -348,6 +348,7 @@ void cat_proc(void *aux){
 	}
 }
 
+//프로세스의 디렉토리 변경은 vnode 구조체의 포인터를 변경하는 것으로 구현
 void cd_proc(char *dir_name)
 {
 	struct list_elem *e;

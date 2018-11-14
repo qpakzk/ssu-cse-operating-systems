@@ -4,6 +4,7 @@
 #include <string.h>
 #include <list.h>
 
+//allocate empty space of vnode_table
 struct vnode *vnode_alloc(){
 	int i;
 	/*

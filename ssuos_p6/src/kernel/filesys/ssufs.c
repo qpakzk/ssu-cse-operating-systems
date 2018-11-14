@@ -44,6 +44,7 @@ struct vnode *init_ssufs(char *volname, uint32_t lba, struct vnode *mnt_root){
 	//laod or init inode table
 	ssufs_load_inodetable(&ssufs_sb);
 
+	//mnt_root : from vnode_alloc() or find_vnode()
 	return make_vnode_tree(&ssufs_sb, mnt_root);
 }
 
@@ -293,8 +294,13 @@ struct ssufs_inode *inode_alloc(uint32_t type){
 
 /********************************************************* inode end ************************************************************/
 
+//vnode is located in only main memory.
 struct vnode *make_vnode_tree(struct ssufs_superblock *sb, struct vnode *mnt_root)
 {
+	//루트 vnode 설정
+	if(mnt_root->v_no == 1)
+		//루트 vnode는 자기자신이 부모 vnode
+		set_vnode(mnt_root, mnt_root, &ssufs_inode_table[INODE_ROOT]);
 
 	return mnt_root;
 }
