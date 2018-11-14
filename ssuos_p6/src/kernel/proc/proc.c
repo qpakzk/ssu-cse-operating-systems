@@ -319,6 +319,7 @@ void mkdir_proc(void* aux)
 	cur_process->cwd->v_op.mkdir(dir_name);
 }
 
+//vnode의 childlist 이름 출력
 void ls_proc(void){
 	struct list_elem *e;
 	struct vnode *cwd = cur_process->cwd;
