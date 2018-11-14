@@ -1,6 +1,7 @@
 #include <filesys/procfs.h>
 #include <filesys/vnode.h>
 #include <proc/proc.h>
+#include <device/console.h>
 #include <list.h>
 #include <string.h>
 #include <ssulib.h>

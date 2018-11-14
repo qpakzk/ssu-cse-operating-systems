@@ -223,7 +223,7 @@ int prints(const char *buf, const char *fmt, ...)
 	int len;
 
 	va_start(args, fmt);
-	len = vsprintk(buf, fmt, args);
+	len = vsprintk((char *)buf, fmt, args);
 	va_end(args);
 
 	return len;

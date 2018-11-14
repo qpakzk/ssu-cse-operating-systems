@@ -65,7 +65,7 @@ int ssufs_load_inodetable(struct ssufs_superblock *sb);
 
 int ssufs_sync(struct ssufs_superblock *sb);
 int ssufs_inode_write(struct ssufs_inode *inode, uint32_t offset, char *buf, uint32_t len);
-int ssuf_inode_read(struct inode *inode, uint32_t offset, char *buf, uint32_t len);
+int ssuf_inode_read(struct ssufs_inode *inode, uint32_t offset, char *buf, uint32_t len);
 struct ssufs_inode *inode_alloc(uint32_t type);
 
 struct vnode *make_vnode_tree(struct ssufs_superblock *sb, struct vnode *mnt_root);

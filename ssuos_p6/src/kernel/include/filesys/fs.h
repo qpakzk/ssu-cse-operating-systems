@@ -3,6 +3,7 @@
 
 #include <filesys/vnode.h>
 
+void init_filesystem();
 int mount(char *volname, char *dirname);
 struct vnode *do_mount(char *volname, char *dirname);
 #endif

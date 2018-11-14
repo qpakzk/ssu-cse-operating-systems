@@ -1,7 +1,10 @@
 #include <filesys/fs.h>
 #include <filesys/vnode.h>
 #include <filesys/ssufs.h>
+#include <filesys/procfs.h>
 #include <proc/proc.h>
+#include <device/console.h>
+#include <string.h>
 
 //devide type
 #define NULL_DEVICE 			0
