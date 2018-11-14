@@ -1,11 +1,13 @@
 #include <filesys/ssufs.h>
 #include <filesys/vnode.h>
+#include <device/console.h>
 #include <device/block.h>
 #include <device/ata.h>
 #include <proc/proc.h>
 #include <ssulib.h>
 #include <string.h>
 #include <bitmap.h>
+#include <stdarg.h>
 
 #define MIN(a, b)		(a<b?a:b)
 
@@ -15,6 +17,9 @@ extern struct blk_dev ata1_blk_dev;
 extern struct process *cur_process;
 
 char tmpblock[SSU_BLOCK_SIZE];
+
+int ssufs_sync_bitmapblock(struct ssufs_superblock *sb);
+int ssufs_sync_inodetable(struct ssufs_superblock *sb);
 
 struct vnode *init_ssufs(char *volname, uint32_t lba, struct vnode *mnt_root){
 	int result;
@@ -167,7 +172,7 @@ int ssufs_sync_superblock(struct ssufs_superblock *sb){
 int ssufs_sync_bitmapblock(struct ssufs_superblock *sb){
 	int result = 0;
 
-	ssufs_writeblock(sb, SSU_BITMAP_BLOCK(sb->lba), sb->blkmap);
+	ssufs_writeblock(sb, SSU_BITMAP_BLOCK(sb->lba), (char *)sb->blkmap);
 
 	return result;
 }
@@ -297,10 +302,20 @@ struct ssufs_inode *inode_alloc(uint32_t type){
 //vnode is located in only main memory.
 struct vnode *make_vnode_tree(struct ssufs_superblock *sb, struct vnode *mnt_root)
 {
-	//루트 vnode 설정
-	if(mnt_root->v_no == 1)
-		//루트 vnode는 자기자신이 부모 vnode
-		set_vnode(mnt_root, mnt_root, &ssufs_inode_table[INODE_ROOT]);
+	int i;
+	struct vnode *vnode;
+	struct vnode *parent_vnode;
+	struct ssufs_inode *inode;
+
+	parent_vnode = mnt_root;
+	for(i = INODE_ROOT; i < NUM_INODE; i++) {
+		inode = &ssufs_inode_table[i];
+		if(inode->i_no != 0) {
+			vnode = (struct vnode *)parent_vnode->info;
+			set_vnode(vnode, parent_vnode, inode);
+			parent_vnode = vnode;
+		}
+	}
 
 	return mnt_root;
 }
@@ -325,6 +340,7 @@ void set_vnode(struct vnode *vnode, struct vnode *parent_vnode, struct ssufs_ino
 	vnode->v_parent = parent_vnode;
 	vnode->type = inode->i_type;
 
+	//vnode->v_op.mkdir() 호출 시, ssufs_mkdir() 호출
 	vnode->v_op.mkdir = ssufs_mkdir;
 	vnode->v_op.ls = NULL;
 
@@ -337,10 +353,10 @@ int get_curde(struct ssufs_inode *cwd, struct dirent * de)
 	int i, ndir;
 
 	//get parent dir
-	ssufs_inode_read(cwd, 0, (char*)de, sizeof(struct dirent));
+	ssufs_inode_read(cwd, sizeof(struct dirent), (char *)de, sizeof(struct dirent));
+
 	pwd = &ssufs_inode_table[de->d_ino];
 	ndir = num_direntry(pwd);
-
 	for(i=0; i<ndir; i++)
 	{
 		ssufs_inode_read(pwd, i*sizeof(struct dirent), (char*)de, sizeof(struct dirent));
