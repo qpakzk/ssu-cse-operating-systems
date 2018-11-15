@@ -8,8 +8,11 @@
 #include <ssulib.h>
 #include <ctype.h>
 
+#define PROC_NUM_MAX 16
+
 extern struct list p_list;
 extern struct process *cur_process;
+
 
 struct vnode *init_procfs(struct vnode *mnt_vnode)
 {
@@ -22,8 +25,7 @@ struct vnode *init_procfs(struct vnode *mnt_vnode)
 
 int proc_process_ls()
 {
-	int result = 0;
-	struct list_elem *e;
+	int result = 0; struct list_elem *e;
 
 	printk(". .. ");
 	for(e = list_begin (&p_list); e != list_end (&p_list); e = list_next (e))
@@ -48,6 +50,7 @@ int proc_process_cd(char *dirname)
 		vnode->v_op.ls = proc_process_info_ls;
 		vnode->v_op.cat = proc_process_info_cat;
 		vnode->v_op.cd = proc_process_info_cd;
+		vnode->info = dirname;
 	}
 }
 
@@ -83,13 +86,23 @@ int proc_process_info_cd(char *dirname)
 
 int proc_process_info_cat(char *filename)
 {
+	char *dirname;
+	struct vnode *vnode;
+	struct process *p;
+	int pid;
+
+	vnode = cur_process->parent->cwd;
+	dirname = vnode->v_name;
+
+	pid = dirname[0] - '0';
+	p = get_process(pid); 
 	//cat time : process의 time_used 출력
 	if(!strcmp(filename, "time")) {
-		printk("time_used : %lu\n", cur_process->time_used);
+		printk("time_used : %lu\n", p->time_used);
 	}
 	//cat stack : process의 stack 출력
 	else if(!strcmp(filename, "stack")) {
-		printk("stack : %x\n", cur_process->stack);
+		printk("stack : %x\n", p->stack);
 	}
 	else {
 		return -1;
