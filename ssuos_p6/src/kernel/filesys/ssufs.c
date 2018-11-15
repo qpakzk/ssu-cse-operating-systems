@@ -302,20 +302,7 @@ struct ssufs_inode *inode_alloc(uint32_t type){
 //vnode is located in only main memory.
 struct vnode *make_vnode_tree(struct ssufs_superblock *sb, struct vnode *mnt_root)
 {
-	int i;
-	struct vnode *vnode;
-	struct vnode *parent_vnode;
-	struct ssufs_inode *inode;
-
-	parent_vnode = mnt_root;
-	for(i = INODE_ROOT; i < NUM_INODE; i++) {
-		inode = &ssufs_inode_table[i];
-		if(inode->i_no != 0) {
-			vnode = (struct vnode *)parent_vnode->info;
-			set_vnode(vnode, parent_vnode, inode);
-			parent_vnode = vnode;
-		}
-	}
+	set_vnode(mnt_root, mnt_root, &ssufs_inode_table[INODE_ROOT]);
 
 	return mnt_root;
 }
@@ -368,6 +355,30 @@ int get_curde(struct ssufs_inode *cwd, struct dirent * de)
 
 //**************************************************     vnode operation      *****************************************************/
 int ssufs_mkdir(char *dirname){
+	struct dirent dirent;
+	struct ssufs_inode *inode;
+	struct ssufs_inode *parent_inode;
+	struct vnode *vnode;
+
+	parent_inode = (struct ssufs_inode *)cur_process->cwd->info;
+
+	//inode table에 inode 추가
+	inode = inode_alloc(SSU_DIR_TYPE);
+
+	dirent.d_ino = inode->i_no;
+	dirent.d_type = inode->i_type;
+
+	memcpy(dirent.d_name, dirname, FILENAME_LEN);
+	ssufs_inode_write(inode, 0, (char *)&dirent, sizeof(struct dirent));
+
+	memcpy(dirent.d_name, "..", FILENAME_LEN);
+	ssufs_inode_write(inode, sizeof(struct dirent), (char *)&dirent, sizeof(struct dirent));
+
+	//vnode tree에 vnode 추가
+	vnode = vnode_alloc();
+	vnode->type = SSU_DIR_TYPE;
+	set_vnode(vnode, cur_process->cwd, inode);
+	list_push_back(&cur_process->cwd->childlist, &vnode->elem);
 
 	return 0;
 }
