@@ -47,6 +47,7 @@ int proc_process_cd(char *dirname)
 		cur_process->cwd = vnode;
 		vnode->v_op.ls = proc_process_info_ls;
 		vnode->v_op.cat = proc_process_info_cat;
+		vnode->v_op.cd = proc_process_info_cd;
 	}
 }
 
@@ -64,7 +65,19 @@ int proc_process_info_ls()
 
 int proc_process_info_cd(char *dirname)
 {
+	struct vnode *vnode = vnode_alloc();
+	vnode->v_parent = cur_process->cwd;
+	memcpy(vnode->v_name, dirname, FILENAME_LEN);
 
+	if(!strcmp(dirname, "cwd") || !strcmp(dirname, "root")) {
+		cur_process->cwd = vnode;
+		vnode->v_op.ls = proc_link_ls;
+	}
+	else {
+		return -1;
+	}
+
+	return 0;
 }
 
 int proc_process_info_cat(char *filename)
