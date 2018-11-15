@@ -8,8 +8,6 @@
 #include <ssulib.h>
 #include <ctype.h>
 
-#define PROC_NUM_MAX 16
-
 extern struct list p_list;
 extern struct process *cur_process;
 
@@ -25,7 +23,8 @@ struct vnode *init_procfs(struct vnode *mnt_vnode)
 
 int proc_process_ls()
 {
-	int result = 0; struct list_elem *e;
+	int result = 0;
+	struct list_elem *e;
 
 	printk(". .. ");
 	for(e = list_begin (&p_list); e != list_end (&p_list); e = list_next (e))
