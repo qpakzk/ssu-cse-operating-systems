@@ -1,3 +1,4 @@
+#include <filesys/ssufs.h>
 #include <filesys/procfs.h>
 #include <filesys/vnode.h>
 #include <proc/proc.h>
@@ -5,6 +6,7 @@
 #include <list.h>
 #include <string.h>
 #include <ssulib.h>
+#include <ctype.h>
 
 extern struct list p_list;
 extern struct process *cur_process;
@@ -37,7 +39,15 @@ int proc_process_ls()
 
 int proc_process_cd(char *dirname)
 {
+	struct vnode *vnode = vnode_alloc();
+	vnode->v_parent = cur_process->cwd;
+	memcpy(vnode->v_name, dirname, FILENAME_LEN);
 
+	if(isdigit(dirname[0])) {
+		cur_process->cwd = vnode;
+		vnode->v_op.ls = proc_process_info_ls;
+		vnode->v_op.cat = proc_process_info_cat;
+	}
 }
 
 int proc_process_info_ls()
@@ -61,7 +71,7 @@ int proc_process_info_cat(char *filename)
 {
 	//cat time : process의 time_used 출력
 	if(!strcmp(filename, "time")) {
-		printk("time_used : %llu\n", cur_process->time_used);
+		printk("time_used : %lu\n", cur_process->time_used);
 	}
 	//cat stack : process의 stack 출력
 	else if(!strcmp(filename, "stack")) {
