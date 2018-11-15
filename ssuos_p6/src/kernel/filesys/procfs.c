@@ -51,6 +51,9 @@ int proc_process_cd(char *dirname)
 		vnode->v_op.cd = proc_process_info_cd;
 		vnode->info = dirname;
 	}
+	else
+		return -1;
+	return 0;
 }
 
 int proc_process_info_ls()
