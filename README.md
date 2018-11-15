@@ -9,6 +9,6 @@ There are 8 projects I solved in this class.
 * [project 3](ssuos_p3) : Keyboard Interrupt
 * [project 4](ssuos_p4) : Scheduling
 * [project 5](ssuos_p5) : Virtual Memory
-* project 6
+* [project 6](ssuos_p6) : Virtual File System
 * project 7
 * project 8
