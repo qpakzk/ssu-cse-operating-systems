@@ -114,17 +114,16 @@ int proc_process_info_cat(char *filename)
 int proc_link_ls()
 {
 	char *dirname;
-	struct vnode *vnode = cur_process->rootdir;
+	struct vnode *vnode;
 	struct vnode *child;
 	struct list_elem *e;
-
 	dirname = (char *)cur_process->cwd->info;
 
 	if(!strcmp(dirname, "root")) {
 		vnode = cur_process->rootdir;
 	}
 	else if(!strcmp(dirname, "cwd")) {
-		vnode = cur_process->cwd;
+		vnode = cur_process->cwd->v_parent;
 	}
 	else {
 		return -1;
