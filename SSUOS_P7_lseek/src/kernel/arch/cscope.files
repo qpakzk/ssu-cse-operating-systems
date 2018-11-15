@@ -1,0 +1,6 @@
+./interrupt.c
+./syscall.c
+./Main.c
+./do_syscall.c
+./i386/switch.S
+./i386/intr-stubs.S
