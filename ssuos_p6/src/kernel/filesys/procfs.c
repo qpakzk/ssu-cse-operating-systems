@@ -11,7 +11,6 @@
 extern struct list p_list;
 extern struct process *cur_process;
 
-
 struct vnode *init_procfs(struct vnode *mnt_vnode)
 {
 	mnt_vnode->v_op.ls = proc_process_ls;
@@ -27,6 +26,7 @@ int proc_process_ls()
 	struct list_elem *e;
 
 	printk(". .. ");
+	//pid 디렉토리 출력
 	for(e = list_begin (&p_list); e != list_end (&p_list); e = list_next (e))
 	{
 		struct process* p = list_entry(e, struct process, elem_all);
@@ -44,11 +44,15 @@ int proc_process_cd(char *dirname)
 	vnode->v_parent = cur_process->cwd;
 	memcpy(vnode->v_name, dirname, FILENAME_LEN);
 
+	//pid 디렉토리로 이동할 경우
 	if(isdigit(dirname[0])) {
+		//디렉토리 이동
 		cur_process->cwd = vnode;
+		//명령어에 대응되는 함수 설정
 		vnode->v_op.ls = proc_process_info_ls;
 		vnode->v_op.cat = proc_process_info_cat;
 		vnode->v_op.cd = proc_process_info_cd;
+		//info에 디렉토리 이름 저장
 		vnode->info = dirname;
 	}
 	else
@@ -76,7 +80,9 @@ int proc_process_info_cd(char *dirname)
 
 	if(!strcmp(dirname, "cwd") || !strcmp(dirname, "root")) {
 		cur_process->cwd = vnode;
+		//디렉토리 이름 저장
 		vnode->info = (char *)dirname;
+		//ls를 실행시키는 함수 설정
 		vnode->v_op.ls = proc_link_ls;
 	}
 	else {
@@ -93,11 +99,16 @@ int proc_process_info_cat(char *filename)
 	struct process *p;
 	int pid;
 
+	//pid 디렉토리의 vnode
 	vnode = cur_process->parent->cwd;
+	//pid 디렉토리 이름
 	dirname = vnode->v_name;
 
+	//pid로 변환
 	pid = dirname[0] - '0';
+	//pid로 프로세스 찾기
 	p = get_process(pid); 
+
 	//cat time : process의 time_used 출력
 	if(!strcmp(filename, "time")) {
 		printk("time_used : %lu\n", p->time_used);
@@ -119,12 +130,17 @@ int proc_link_ls()
 	struct vnode *vnode;
 	struct vnode *child;
 	struct list_elem *e;
+
+	//info에 디렉토리 이름 저장해놨던거 가져오기
+	//dirname을 통해 root인지 cwd인지 판단
 	dirname = (char *)cur_process->cwd->info;
 
 	if(!strcmp(dirname, "root")) {
+		//루트 디렉토리의 vnode
 		vnode = cur_process->rootdir;
 	}
 	else if(!strcmp(dirname, "cwd")) {
+		//pid 디렉토리의 vnode
 		vnode = cur_process->cwd->v_parent;
 	}
 	else {
@@ -132,6 +148,7 @@ int proc_link_ls()
 	}
 
 	printk(". .. ");
+	//root 또는 cwd의 파일 리스트 출력
 	for(e = list_begin(&vnode->childlist); e != list_end(&vnode->childlist); e = list_next(e))
 	{
 		child = list_entry(e, struct vnode, elem);
