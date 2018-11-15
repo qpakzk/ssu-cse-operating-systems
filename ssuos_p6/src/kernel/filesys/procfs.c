@@ -59,7 +59,19 @@ int proc_process_info_cd(char *dirname)
 
 int proc_process_info_cat(char *filename)
 {
+	//cat time : process의 time_used 출력
+	if(!strcmp(filename, "time")) {
+		printk("time_used : %llu\n", cur_process->time_used);
+	}
+	//cat stack : process의 stack 출력
+	else if(!strcmp(filename, "stack")) {
+		printk("stack : %x\n", cur_process->stack);
+	}
+	else {
+		return -1;
+	}
 
+	return 0;
 }
 
 int proc_link_ls()
