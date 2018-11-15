@@ -20,6 +20,7 @@ char tmpblock[SSU_BLOCK_SIZE];
 
 int ssufs_sync_bitmapblock(struct ssufs_superblock *sb);
 int ssufs_sync_inodetable(struct ssufs_superblock *sb);
+static int num_direntry(struct ssufs_inode *inode);
 
 struct vnode *init_ssufs(char *volname, uint32_t lba, struct vnode *mnt_root){
 	int result;
@@ -86,7 +87,7 @@ int ssufs_load_inodetable(struct ssufs_superblock *sb)
 		memcpy(dirent.d_name, ".", sizeof("."));
 		ssufs_inode_write(root_inode, 0, (char *)&dirent, sizeof(struct dirent));
 		memcpy(dirent.d_name, "..", sizeof(".."));
-		ssufs_inode_write(root_inode, root_inode->i_size, (char *)&dirent, sizeof(struct dirent));
+		ssufs_inode_write(root_inode, sizeof(struct dirent), (char *)&dirent, sizeof(struct dirent));
 
 		ssufs_sync_bitmapblock(sb);
 		ssufs_sync_inodetable(sb);
@@ -298,11 +299,39 @@ struct ssufs_inode *inode_alloc(uint32_t type){
 }
 
 /********************************************************* inode end ************************************************************/
+void create_vnode_tree(struct vnode *parent_vnode) {
+	int i, j;
+	int ndir;
+	struct dirent dirent;
+	struct ssufs_inode *parent_inode;
+	struct vnode *vnode;
+	struct ssufs_inode *inode;
+
+	parent_inode = (struct ssufs_inode *)parent_vnode->info;
+
+	ndir = num_direntry(parent_inode);
+	for(i = 2; i < ndir; i++) {
+		ssufs_inode_read(parent_inode, i*sizeof(struct dirent), (char*)&dirent, sizeof(struct dirent));
+		inode = &ssufs_inode_table[dirent.d_ino];
+		vnode = vnode_alloc();
+		set_vnode(vnode, parent_vnode, inode);
+		list_push_back(&parent_vnode->childlist, &vnode->elem);
+		create_vnode_tree(vnode);
+	}
+}
 
 //vnode is located in only main memory.
 struct vnode *make_vnode_tree(struct ssufs_superblock *sb, struct vnode *mnt_root)
 {
-	set_vnode(mnt_root, mnt_root, &ssufs_inode_table[INODE_ROOT]);
+	struct vnode *parent_vnode;
+	struct ssufs_inode *parent_inode;
+	struct ssufs_inode *inode = &ssufs_inode_table[INODE_ROOT];
+	int i;
+
+	//root vnode 설정
+	set_vnode(mnt_root, mnt_root, inode);
+	//vnode tree 생성
+	create_vnode_tree(mnt_root);
 
 	return mnt_root;
 }
@@ -359,6 +388,7 @@ int ssufs_mkdir(char *dirname){
 	struct ssufs_inode *inode;
 	struct ssufs_inode *parent_inode;
 	struct vnode *vnode;
+	int ndir;
 
 	parent_inode = (struct ssufs_inode *)cur_process->cwd->info;
 
@@ -379,6 +409,9 @@ int ssufs_mkdir(char *dirname){
 	vnode->type = SSU_DIR_TYPE;
 	set_vnode(vnode, cur_process->cwd, inode);
 	list_push_back(&cur_process->cwd->childlist, &vnode->elem);
+
+	ndir = num_direntry(parent_inode);
+	ssufs_inode_write(parent_inode, ndir * sizeof(struct dirent), (char *)&dirent, sizeof(struct dirent));
 
 	return 0;
 }
