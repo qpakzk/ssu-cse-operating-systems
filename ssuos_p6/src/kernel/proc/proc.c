@@ -475,6 +475,7 @@ void shell_proc(void* aux)
 			continue;
 		}
 
+		//procf를 mount할 경우 vnode의 정보를 procfs의 vnode 정보로 변경
 		if( strncmp(token[0], "mount", BUFSIZ) == 0)
 		{
 			mount(token[1], token[2]);
