@@ -309,6 +309,7 @@ void create_vnode_tree(struct vnode *parent_vnode) {
 
 	parent_inode = (struct ssufs_inode *)parent_vnode->info;
 
+	//부모 inode의 direct에 저장된 자식 inode들 찾아서 vnode childlist에 저장
 	ndir = num_direntry(parent_inode);
 	for(i = 2; i < ndir; i++) {
 		ssufs_inode_read(parent_inode, i*sizeof(struct dirent), (char*)&dirent, sizeof(struct dirent));
@@ -397,10 +398,11 @@ int ssufs_mkdir(char *dirname){
 
 	dirent.d_ino = inode->i_no;
 	dirent.d_type = inode->i_type;
-
+	//inode의 0번 째 블록에 새로 생성하는 디렉토리 저장
 	memcpy(dirent.d_name, dirname, FILENAME_LEN);
 	ssufs_inode_write(inode, 0, (char *)&dirent, sizeof(struct dirent));
 
+	//inode의 1번 째 블록에 부모 디렉토리 저장
 	memcpy(dirent.d_name, "..", FILENAME_LEN);
 	ssufs_inode_write(inode, sizeof(struct dirent), (char *)&dirent, sizeof(struct dirent));
 
@@ -410,6 +412,7 @@ int ssufs_mkdir(char *dirname){
 	set_vnode(vnode, cur_process->cwd, inode);
 	list_push_back(&cur_process->cwd->childlist, &vnode->elem);
 
+	//부모 inode에 자식 inode들 저장
 	ndir = num_direntry(parent_inode);
 	ssufs_inode_write(parent_inode, ndir * sizeof(struct dirent), (char *)&dirent, sizeof(struct dirent));
 
