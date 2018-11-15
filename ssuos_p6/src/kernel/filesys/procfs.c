@@ -71,6 +71,7 @@ int proc_process_info_cd(char *dirname)
 
 	if(!strcmp(dirname, "cwd") || !strcmp(dirname, "root")) {
 		cur_process->cwd = vnode;
+		vnode->info = (char *)dirname;
 		vnode->v_op.ls = proc_link_ls;
 	}
 	else {
@@ -99,5 +100,30 @@ int proc_process_info_cat(char *filename)
 
 int proc_link_ls()
 {
+	char *dirname;
+	struct vnode *vnode = cur_process->rootdir;
+	struct vnode *child;
+	struct list_elem *e;
 
+	dirname = (char *)cur_process->cwd->info;
+
+	if(!strcmp(dirname, "root")) {
+		vnode = cur_process->rootdir;
+	}
+	else if(!strcmp(dirname, "cwd")) {
+		vnode = cur_process->cwd;
+	}
+	else {
+		return -1;
+	}
+
+	printk(". .. ");
+	for(e = list_begin(&vnode->childlist); e != list_end(&vnode->childlist); e = list_next(e))
+	{
+		child = list_entry(e, struct vnode, elem);
+		printk("%s ", child->v_name);
+	}
+	printk("\n");
+
+	return 0;
 }
