@@ -196,6 +196,7 @@ int generic_lseek(int fd, int offset, int whence, char *opt)
 	int flag;
 	int diff;
 	int i;
+	char buf[BUFSIZ];
 
 	//cursor가 가리키고 있는 ssufile 구조체가 없을 경우
 	if( (cursor = cur_process->file[fd]) == NULL)
@@ -237,7 +238,21 @@ int generic_lseek(int fd, int offset, int whence, char *opt)
 	//시작 범위나 끝 범위를 벗어날 경우
 	if(location < 0) {
 		if(flag == RE_OPT) {
+			*pos = 0;
+			
+			memset(buf, 0x00, BUFSIZ);
+			read(fd, buf, file_size);
 
+			*pos = 0;
+			diff = -location;
+
+			for(i = 0; i < diff; i++)
+				write(fd, "0", 1);
+			write(fd, buf, file_size);
+
+			cursor->inode->sn_size += diff;
+			file_size = cursor->inode->sn_size;
+			*pos = 0;
 		}
 		else if(flag == C_OPT) {
 
@@ -260,8 +275,8 @@ int generic_lseek(int fd, int offset, int whence, char *opt)
 		else
 			return -1;
 	}
-	//업데이트된 위치 반영
-	*pos = location;
+	else
+		*pos = location;
 
 	return *pos;
 }
