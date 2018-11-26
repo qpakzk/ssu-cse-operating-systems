@@ -153,7 +153,7 @@ int generic_read(int fd, void *buf, size_t len)
 	if (~cursor->flags & O_RDONLY)
 		return -1;
 	
-	if (*pos + len > cursor->inode->sn_size);
+	if (*pos + len > cursor->inode->sn_size)
 		len = cursor->inode->sn_size - *pos;
 
 	file_read(cur_process->file[fd]->inode,*pos,buf,len);
@@ -173,7 +173,7 @@ int generic_write(int fd, void *buf, size_t len)
 	if (~cursor->flags & O_WRONLY)
 		return -1;
 
-	*pos=file_write(cur_process->file[fd]->inode,*pos,buf,len);
+	file_write(cur_process->file[fd]->inode,*pos,buf,len);
 	*pos += len;
 	//printk("in generic write : %d \n", *pos);
 	return len;
