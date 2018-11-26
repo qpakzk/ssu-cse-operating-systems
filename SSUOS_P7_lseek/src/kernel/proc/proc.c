@@ -368,12 +368,12 @@ void lseek_proc(void *aux , void *filename)
 	if (fd < 0 )return;
 	write(fd , "ssuos ",6);
 	//if you add lseek() system call , remove the '//'
-//	printk ("%d \n ", lseek(fd, -3, SEEK_CUR));  
+	printk ("%d\n", lseek(fd, -3, SEEK_CUR));
 	write(fd, "world",5);
-//	lseek(fd, 0, SEEK_SET);
+	lseek(fd, 0, SEEK_SET);
 	read(fd , buf, 8);
 	printk("%s\n", buf);
-	//lseek(fd, -9, SEEK_END);
+	lseek(fd, -9, SEEK_END);
 	read(fd, buf, 9);
 	printk("%s\n", buf);
 
