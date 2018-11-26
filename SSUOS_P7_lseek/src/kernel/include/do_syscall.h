@@ -9,5 +9,6 @@ void do_shutdown(void);
 int do_open(const char *pathname, int flags);
 int do_read(int fd, char *buf, int len);
 int do_write(int fd, const char *buf, int len);
+int do_lseek(int fd, int offset, int whence);
 
 #endif

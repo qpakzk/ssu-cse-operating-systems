@@ -85,6 +85,7 @@ void init_syscall(void)
 	REGSYS(SYS_OPEN, do_open, 2);
 	REGSYS(SYS_READ, do_read, 3);
 	REGSYS(SYS_WRITE, do_write, 3);
+	REGSYS(SYS_LSEEK, do_lseek, 3);
 }
 
 void exit(int status)
@@ -127,4 +128,7 @@ int write(int fd, const char *buf, size_t len)
 	return syscall3(SYS_WRITE, fd, buf, len);
 }
 
-
+int lseek(int fd, int offset, int whence)
+{
+	return syscall3(SYS_LSEEK, fd, offset, whence);
+}

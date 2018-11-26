@@ -178,3 +178,36 @@ int generic_write(int fd, void *buf, size_t len)
 	//printk("in generic write : %d \n", *pos);
 	return len;
 }
+
+int generic_lseek(int fd, int offset, int whence)
+{
+	struct ssufile *cursor;
+	uint16_t *pos = &(cur_process->file[fd]->pos);
+	int location;
+	int file_size;
+
+	if( (cursor = cur_process->file[fd]) == NULL)
+		return -1;
+
+	file_size = cursor->inode->sn_size;
+
+	switch(whence) {
+		case SEEK_END:
+			location = file_size;
+			break;
+		case SEEK_SET:
+			location = 0;
+			break;
+		case SEEK_CUR:
+			location = *pos;
+			break;
+	}
+
+	location += offset;
+
+	if(location < 0 || location > file_size)
+		return -1;
+	*pos = location;
+
+	return *pos;
+}
