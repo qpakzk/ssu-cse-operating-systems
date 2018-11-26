@@ -484,8 +484,18 @@ void shell_proc(void* aux)
 		}
 		else if(cmdlist[i].type == 1)
 		{
+			int pid;
 			cur_process->simple_lock = 1;
-			int pid = fork(cmdlist[i].func, token[1], token[2]);
+
+			/*
+			 * test 명령어일 경우
+			 * lseek_proc()의 두 번째 파라미터에 filename을 받기 위해
+			 * token[1]과 token[2]의 위치 변경
+			 */
+			if(strncmp(token[0], "test", BUFSIZ) == 0)
+				pid = fork(cmdlist[i].func, token[2], token[1]);
+			else
+				pid = fork(cmdlist[i].func, token[1], token[2]);
 
 			while(cur_process->simple_lock)
 				;
