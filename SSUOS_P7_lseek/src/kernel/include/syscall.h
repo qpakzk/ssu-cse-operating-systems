@@ -26,7 +26,7 @@ void shutdown(void);
 int open(const char *pathname, int flags);
 int read(int fd, char *buf, size_t len);
 int write(int fd, const char *buf, size_t len);
-int lseek(int fd, int offset, int whence);
+int lseek(int fd, int offset, int whence, char *opt);
 //lseek() 추가
 
 extern int syscall_tbl[SYS_NUM][2];

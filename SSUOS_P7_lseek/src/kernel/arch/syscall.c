@@ -130,7 +130,7 @@ int write(int fd, const char *buf, size_t len)
 }
 
 //syscall3 매크로 함수를 통해 0x30 인터럽트 호출
-int lseek(int fd, int offset, int whence)
+int lseek(int fd, int offset, int whence, char *opt)
 {
 	return syscall3(SYS_LSEEK, fd, offset, whence);
 }
