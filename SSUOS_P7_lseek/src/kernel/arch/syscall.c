@@ -86,6 +86,7 @@ void init_syscall(void)
 	REGSYS(SYS_READ, do_read, 3);
 	REGSYS(SYS_WRITE, do_write, 3);
 	REGSYS(SYS_LSEEK, do_lseek, 3);
+	//시스템 콜 테이블에 시스템 콜 등록
 }
 
 void exit(int status)
@@ -128,6 +129,7 @@ int write(int fd, const char *buf, size_t len)
 	return syscall3(SYS_WRITE, fd, buf, len);
 }
 
+//syscall3 매크로 함수를 통해 0x30 인터럽트 호출
 int lseek(int fd, int offset, int whence)
 {
 	return syscall3(SYS_LSEEK, fd, offset, whence);

@@ -1,6 +1,7 @@
 #ifndef     __SYSCALL_H__
 #define     __SYSCALL_H__
 
+//시스템 콜 테이블 번호에 SYS_LSEEK 추가
 enum SYS_LIST {
 	SYS_FORK = 0,
 	SYS_EXIT,
@@ -26,7 +27,7 @@ int open(const char *pathname, int flags);
 int read(int fd, char *buf, size_t len);
 int write(int fd, const char *buf, size_t len);
 int lseek(int fd, int offset, int whence);
-
+//lseek() 추가
 
 extern int syscall_tbl[SYS_NUM][2];
 #endif

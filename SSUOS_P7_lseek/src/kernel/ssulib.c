@@ -186,27 +186,36 @@ int generic_lseek(int fd, int offset, int whence)
 	int location;
 	int file_size;
 
+	//cursor가 가리키고 있는 ssufile 구조체가 없을 경우
 	if( (cursor = cur_process->file[fd]) == NULL)
 		return -1;
 
+	//cursor가 가리키는 파일의 크기
 	file_size = cursor->inode->sn_size;
 
 	switch(whence) {
 		case SEEK_END:
+			//파일 크기 = 파일 끝 위치
 			location = file_size;
 			break;
 		case SEEK_SET:
+			//파일 처음 위치
 			location = 0;
 			break;
 		case SEEK_CUR:
+			//현재 위치
 			location = *pos;
 			break;
 	}
 
+	//whence에 해당하는 위치에 offset 적용
 	location += offset;
 
+	//시작 범위나 끝 범위를 벗어날 경우
 	if(location < 0 || location > file_size)
 		return -1;
+
+	//업데이트된 위치 반영
 	*pos = location;
 
 	return *pos;

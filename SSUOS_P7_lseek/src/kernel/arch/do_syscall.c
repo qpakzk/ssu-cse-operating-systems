@@ -84,7 +84,12 @@ int do_write(int fd, const char *buf, int len)
 	return generic_write(fd, (void *)buf, len);
 }
 
+/*
+ * 인터럽트가 실행되면 시스템 콜 테이블에 등록되어 있는
+ * do_lseek() 호출
+ */
 int do_lseek(int fd, int offset, int whence)
 {
+	//generic_lseek()을 통해 lseek 루틴 처리
 	return generic_lseek(fd, offset, whence);
 }
