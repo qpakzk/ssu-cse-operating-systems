@@ -179,7 +179,7 @@ int generic_write(int fd, void *buf, size_t len)
 	return len;
 }
 
-int generic_lseek(int fd, int offset, int whence)
+int generic_lseek(int fd, int offset, int whence, char *opt)
 {
 	struct ssufile *cursor;
 	uint16_t *pos = &(cur_process->file[fd]->pos);

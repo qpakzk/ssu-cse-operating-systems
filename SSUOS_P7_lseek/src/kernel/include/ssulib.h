@@ -13,6 +13,6 @@ int getToken(char* buf, char tok[][BUFSIZ], int max);
 int generic_read(int fd, void *buf, size_t len);
 int generic_write(int fd, void *buf, size_t len);
 //generic_lseek() 추가 
-int generic_lseek(int fd, int offset, int whence);
+int generic_lseek(int fd, int offset, int whence, char *opt);
 int generic_close(int fd);
 #endif

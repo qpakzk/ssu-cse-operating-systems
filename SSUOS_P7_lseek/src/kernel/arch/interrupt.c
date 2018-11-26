@@ -275,6 +275,10 @@ void syscall_handler(struct intr_frame *iframe)
 		case 3:
 			ret = ((int(*)(int, int, int))syscall_tbl[sys_num][0]) (arg[0], arg[1], arg[2]);
 			break;
+		//syscall4 등록
+		case 4:
+			ret = ((int(*)(int, int, int, int))syscall_tbl[sys_num][0]) (arg[0], arg[1], arg[2], arg[3]);
+			break;
 	}
 	
 	*(pt + 3) = ret;		// 리턴값 넣어주기.
