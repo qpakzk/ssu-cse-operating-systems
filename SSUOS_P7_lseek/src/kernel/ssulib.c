@@ -3,6 +3,14 @@
 #include <device/io.h>
 #include <syscall.h>
 #include <filesys/file.h>
+#include <string.h>
+
+//option flag
+#define NO_OPT 0x0
+#define E_OPT  0x1
+#define A_OPT  0x2
+#define RE_OPT 0x4
+#define C_OPT  0x8
 
 // void memcpy(void* from, void* to, uint32_t len)
 // {
@@ -185,10 +193,25 @@ int generic_lseek(int fd, int offset, int whence, char *opt)
 	uint16_t *pos = &(cur_process->file[fd]->pos);
 	int location;
 	int file_size;
+	int flag;
+	int diff;
+	int i;
 
 	//cursor가 가리키고 있는 ssufile 구조체가 없을 경우
 	if( (cursor = cur_process->file[fd]) == NULL)
 		return -1;
+
+	//option에 따라 플래그 설정
+	if(opt == NULL)
+		flag = NO_OPT;
+	else if(!strcmp(opt, "-e"))
+		flag = E_OPT;
+	else if(!strcmp(opt, "-a"))
+		flag = A_OPT;
+	else if(!strcmp(opt, "-re"))
+		flag = RE_OPT;
+	else if(!strcmp(opt, "-c"))
+		flag = C_OPT;
 
 	//cursor가 가리키는 파일의 크기
 	file_size = cursor->inode->sn_size;
@@ -212,9 +235,31 @@ int generic_lseek(int fd, int offset, int whence, char *opt)
 	location += offset;
 
 	//시작 범위나 끝 범위를 벗어날 경우
-	if(location < 0 || location > file_size)
-		return -1;
+	if(location < 0) {
+		if(flag == RE_OPT) {
 
+		}
+		else if(flag == C_OPT) {
+
+		}
+		else
+			return -1;
+	}
+	else if(location > file_size) {
+		if(flag == E_OPT) {
+			diff = location - file_size;
+			*pos = file_size;
+			for(i = 0; i < diff; i++)
+				write(fd, "0", 1);
+			cursor->inode->sn_size = location;
+			file_size = cursor->inode->sn_size;
+		}
+		else if(flag == C_OPT) {
+
+		}
+		else
+			return -1;
+	}
 	//업데이트된 위치 반영
 	*pos = location;
 
