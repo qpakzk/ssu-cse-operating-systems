@@ -232,6 +232,25 @@ int generic_lseek(int fd, int offset, int whence, char *opt)
 			break;
 	}
 
+	if(flag == A_OPT) {
+		uint16_t *cur_pos = pos;
+
+		memset(buf, 0x00, sizeof(buf));
+		*pos = 0;
+		read(fd, buf, file_size);
+
+		*pos = 0;
+		for(i = 0; i < *cur_pos; i++)
+			write(fd, &buf[i], 1);
+
+		for(i = 0; i < offset; i++)
+			write(fd, "0", 1);
+
+		for(i = *cur_pos; i < file_size; i++)
+			write(fd, &buf[i], 1);
+
+		return *pos;
+	}
 	//whence에 해당하는 위치에 offset 적용
 	location += offset;
 
@@ -255,7 +274,8 @@ int generic_lseek(int fd, int offset, int whence, char *opt)
 			*pos = 0;
 		}
 		else if(flag == C_OPT) {
-
+			location += file_size;
+			*pos = location;
 		}
 		else
 			return -1;
@@ -270,7 +290,7 @@ int generic_lseek(int fd, int offset, int whence, char *opt)
 			file_size = cursor->inode->sn_size;
 		}
 		else if(flag == C_OPT) {
-
+			*pos = location % file_size;
 		}
 		else
 			return -1;
