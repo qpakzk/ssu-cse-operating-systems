@@ -371,39 +371,48 @@ void lseek_proc(void *aux , void *filename)
 	if((fd = open(filename, O_RDWR)) < 0)
 		return;
 
+	//옵션이 없을 경우
 	if(arg[0] == 0) {
 		lseek(fd, 0, SEEK_SET, arg);
 		write(fd , "ssuos ",6);
-		//if you add lseek() system call , remove the '//'
+
+		//파일 포인터 6인 상태에서 3으로 이동
 		printk ("%d\n", lseek(fd, -3, SEEK_CUR, NULL));
-		write(fd, "world", 5);
+		write(fd, "world", 5);//write 결과 파일에 ssuworld 기록
 		lseek(fd, 0, SEEK_SET, NULL);
 		read(fd , buf, 8);
-		printk("%s\n", buf);
+		printk("%s\n", buf);//ssuworld 출력
 		lseek(fd, -9, SEEK_END, NULL);
 		read(fd, buf, 9);
-		printk("%s\n", buf);
+		printk("%s\n", buf);//ssuworld 출력
 	}
 	else if(!strcmp(arg, "-e")) {
 		lseek(fd, 0, SEEK_SET, NULL);
 		write(fd, "ssuos", 5);
 
+		//파일 포인터의 현재 위치를 4로 지정
 		fp = lseek(fd, 4, SEEK_SET, NULL);
 		printk("current location of file pointer = %d\n", fp);
+		//파일 크기 측정
 		file_size = lseek(fd, 0, SEEK_END, NULL);
 		printk("current file size = %d\n", file_size);
 
 		printk("offset 4 from SEEK_CUR\n");
+		//파일 크기를 측정할 때 파일 포인터가 변경되었으므로 파일 포인터를 원위치로 조정
 		lseek(fd, fp, SEEK_SET, NULL);
+		//EOF 초과 부분 만큼 파일 크기가 확장되고 '0'이 저장됨 
 		fp = lseek(fd, 4, SEEK_CUR, arg);
 		printk("current location of file pointer = %d\n", fp);
+		//파일 크기 측정
 		file_size = lseek(fd, 0, SEEK_END, NULL);
 		printk("current file size = %d\n", file_size);
 
+		//파일 전체 내용 read
 		lseek(fd, 0, SEEK_SET, NULL);
 		read(fd, buf, file_size);
 		printk("%s\n", buf);
 
+		//e 옵션은 시작 지점 초과에 대한 처리 기능이 없으므로 -1 반환
 		printk("offset -1 from SEEK_SET\n");
 		fp = lseek(fd, -1, SEEK_SET, arg);
 		printk("current location of file pointer = %d\n", fp);
@@ -412,35 +421,44 @@ void lseek_proc(void *aux , void *filename)
 		lseek(fd, 0, SEEK_SET, NULL);
 		write(fd , "ssuos", 5);
 
+		//파일 포인터의 현재 위치를 3으로 지정
 		fp = lseek(fd, 3, SEEK_SET, NULL);
 		printk("current location of file pointer = %d\n", fp);
+		//파일 크기 측정
 		file_size = lseek(fd, 0, SEEK_END, NULL);
 		printk("current file size = %d\n", file_size);
 
+		//파일 크기를 측정할 때 파일 포인터가 변경되었으므로 파일 포인터를 원위치로 조정
 		lseek(fd, fp, SEEK_SET, NULL);
 		printk("offset 2 from SEEK_CUR\n");
+		//파일 포인터 현재 위치로부터 '0'을 2개 삽입
 		fp = lseek(fd, 2, SEEK_CUR, arg);
 		printk("current location of file pointer = %d\n", fp);
+		//파일 크기 측정
 		file_size = lseek(fd, 0, SEEK_END, NULL);
 		printk("current file size = %d\n", file_size);
 
+		//파일 전체 내용 read
 		lseek(fd, 0, SEEK_SET, NULL);
 		memset(buf, 0x00, BUFSIZ);
 		read(fd, buf, file_size);
 		printk("%s\n", buf);
 
+		//파일 포인터의 시작 지점에서 새로운 공간 삽입 
 		printk("offset 3 from SEEK_SET\n");
 		fp = lseek(fd, 3, SEEK_SET, arg);
 		printk("current location of file pointer = %d\n", fp);
-
+		//파일 크기 측정
 		file_size = lseek(fd, 0, SEEK_END, NULL);
 		printk("current file size = %d\n", file_size);
 
+		//파일 전체 내용 read
 		lseek(fd, 0, SEEK_SET, NULL);
 		memset(buf, 0x00, BUFSIZ);
 		read(fd, buf, file_size);
 		printk("%s\n", buf);
 
+		//파일 포인터의 끝 지점에서 새로운 공간 삽입
 		printk("offset 1 from SEEK_END\n");
 		fp = lseek(fd, 1, SEEK_END, arg);
 		printk("current location of file pointer = %d\n", fp);
@@ -448,6 +466,7 @@ void lseek_proc(void *aux , void *filename)
 		file_size = lseek(fd, 0, SEEK_END, NULL);
 		printk("current file size = %d\n", file_size);
 
+		//파일 전체 내용 read
 		lseek(fd, 0, SEEK_SET, NULL);
 		memset(buf, 0x00, BUFSIZ);
 		read(fd, buf, file_size);
@@ -455,14 +474,17 @@ void lseek_proc(void *aux , void *filename)
 
 		fp = lseek(fd, 4, SEEK_SET, NULL);
 		printk("current location of file pointer = %d\n", fp);
-
+		
 		printk("offset -2 from SEEK_CUR\n");
+		//offset이 음수일 경우 처리
+		//절대값만큼 빈 공간을 삽입하되 파일 포인터 위치는 고정하도록 구현
 		fp = lseek(fd, -2, SEEK_CUR, arg);
 		printk("current location of file pointer = %d\n", fp);
-
+		//파일 크기 측정
 		file_size = lseek(fd, 0, SEEK_END, NULL);
 		printk("current file size = %d\n", file_size);
 
+		//파일 전체 내용 read
 		lseek(fd, 0, SEEK_SET, NULL);
 		memset(buf, 0x00, BUFSIZ);
 		read(fd, buf, file_size);
@@ -472,22 +494,29 @@ void lseek_proc(void *aux , void *filename)
 		lseek(fd, 0, SEEK_SET, arg);
 		write(fd , "ssuos", 5);
 
+		//파일 포인터의 현재 위치를 2로 지정
 		fp = lseek(fd, 2, SEEK_SET, NULL);
 		printk("current location of file pointer = %d\n", fp);
+		//파일 크기 측정
 		file_size = lseek(fd, 0, SEEK_END, NULL);
 		printk("current file size = %d\n", file_size);
 
 		printk("offset -5 from SEEK_CUR\n");
+		//파일 크기를 측정할 때 파일 포인터가 변경되었으므로 파일 포인터를 원위치로 조정
 		lseek(fd, fp, SEEK_SET, NULL);
+		//시작 지점을 초과하는 만큼 공간을 추가하고 '0'을 저장
 		fp = lseek(fd, -5, SEEK_CUR, arg);
 		printk("current location of file pointer = %d\n", fp);
+		//파일 크기 측정
 		file_size = lseek(fd, 0, SEEK_END, NULL);
 		printk("current file size = %d\n", file_size);
 
+		//파일 전체 내용 read
 		lseek(fd, 0, SEEK_SET, NULL);
 		read(fd, buf, file_size);
 		printk("%s\n", buf);
 
+		//re 옵션은 끝 지점 초과에 대한 처리 기능이 없으므로 -1 반환
 		printk("offset 1 from SEEK_END\n");
 		fp = lseek(fd, 1, SEEK_END, arg);
 		printk("current location of file pointer = %d\n", fp);
@@ -495,19 +524,21 @@ void lseek_proc(void *aux , void *filename)
 	else if(!strcmp(arg, "-c")) {
 		lseek(fd, 0, SEEK_SET, arg);
 		write(fd , "ssuos", 5);
-
+		//파일 크기 측정
 		file_size = lseek(fd, 0, SEEK_END, NULL);
 		printk("current file size = %d\n", file_size);
 
+		//파일 포인터가 파일의 EOF을 넘어설 경우 파일의 앞부분으로 순환
 		printk("offset 2 from SEEK_END\n");
 		fp = lseek(fd, 2, SEEK_END, arg);
 		printk("current location of file pointer = %d\n", fp);
 
+		//파일 포인터가 파일의 시작 지점을 넘어설 경우 파일의 뒷부분으로 순환
 		printk("offset -3 from SEEK_CUR\n");
 		fp = lseek(fd, -3, SEEK_CUR, arg);
 		printk("current location of file pointer = %d\n", fp);
 	}
-	else
+	else//존재하지 않는 옵션을 입력할 경우
 		printk("error: invalid option '%s'\n", aux);
 }
 
@@ -616,7 +647,7 @@ void shell_proc(void* aux)
 			cur_process->simple_lock = 1;
 
 			/*
-			 * test 명령어일 경우
+			 * test 명령어에서 옵션이 없는 경우
 			 * lseek_proc()의 두 번째 파라미터에 filename을 받기 위해
 			 * token[1]과 token[2]의 위치 변경
 			 */

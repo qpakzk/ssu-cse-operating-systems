@@ -68,6 +68,8 @@
 		ret;									\
 		})
 
+//파라미터가 4개인 시스템 콜 매크로 정의
+//스택에 파라미터 4개를 역순으로 push 후 0x30 인터럽트 호출
 #define syscall4(SYS_NUM, ARG0, ARG1, ARG2, ARG3) ({	\
 		int ret;								\
 		__asm__ __volatile(						\
@@ -149,7 +151,7 @@ int write(int fd, const char *buf, size_t len)
 	return syscall3(SYS_WRITE, fd, buf, len);
 }
 
-//syscall3 매크로 함수를 통해 0x30 인터럽트 호출
+//syscall4 매크로 함수를 통해 0x30 인터럽트 호출
 int lseek(int fd, int offset, int whence, char *opt)
 {
 	return syscall4(SYS_LSEEK, fd, offset, whence, opt);

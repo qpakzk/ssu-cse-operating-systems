@@ -160,7 +160,8 @@ int generic_read(int fd, void *buf, size_t len)
 
 	if (~cursor->flags & O_RDONLY)
 		return -1;
-	
+
+	//오류 수정
 	if (*pos + len > cursor->inode->sn_size)
 		len = cursor->inode->sn_size - *pos;
 
@@ -181,6 +182,7 @@ int generic_write(int fd, void *buf, size_t len)
 	if (~cursor->flags & O_WRONLY)
 		return -1;
 
+	//오류 수정
 	file_write(cur_process->file[fd]->inode,*pos,buf,len);
 	*pos += len;
 	//printk("in generic write : %d \n", *pos);
@@ -232,71 +234,105 @@ int generic_lseek(int fd, int offset, int whence, char *opt)
 			break;
 	}
 
+	//a 옵션일 경우
 	if(flag == A_OPT) {
+		//offset의 음수 여부 판단 플래그
 		bool is_negative = false;
 
+		//offset이 음수일 경우
 		if(offset < 0) {
+			//플래그를 true로 전환
 			is_negative = true;
+			//절댓값으로 설정
 			offset = -offset;
 		}
 
 		memset(buf, 0x00, sizeof(buf));
+		//파일 포인터 처음 위치로 설정
 		*pos = 0;
+		//파일 전체 내용 read
 		read(fd, buf, file_size);
 
+		//read 시 파일 포인터가 변경되었으므로 처음으로 재설정
 		*pos = 0;
+		//마지막으로 설정된 파일 포인터 전까지의 파일 내용을 write
 		for(i = 0; i < location; i++)
 			write(fd, &buf[i], 1);
 
+		//offset만큼 공간 추가
 		for(i = 0; i < offset; i++)
 			write(fd, "0", 1);
 
+		//마지막으로 설정된 파일 포인터 이후 파일 내용 write
 		for(i = location; i < file_size; i++)
 			write(fd, &buf[i], 1);
 
+		//offset이 음수인 경우 파일 포인터를 움직이지 않을 것이므로 offset을 0으로 초기화
 		if(is_negative)
 			offset = 0;
 	}
 	//whence에 해당하는 위치에 offset 적용
 	location += offset;
 
-	//시작 범위나 끝 범위를 벗어날 경우
+	//시작 범위를 벗어날 경우
 	if(location < 0) {
+		//re 옵션일 경우
 		if(flag == RE_OPT) {
+			//파일 포인터 처음 위치로 설정
 			*pos = 0;
-			
+
+			//파일 전체 내용 read
 			memset(buf, 0x00, BUFSIZ);
 			read(fd, buf, file_size);
 
+			//read 시 파일 포인터가 변경되었으므로 처음으로 재설정
 			*pos = 0;
+
+			//offset 적용 후 파일 포인터의 음수 위치값의 절대값이 추가해야 할 공간이 됨
 			diff = -location;
 
+			//공간 추가
 			for(i = 0; i < diff; i++)
 				write(fd, "0", 1);
+			//기존 파일 내용 write
 			write(fd, buf, file_size);
 
+			//마지막 파일 포인터 위치를 0으로 설정
 			*pos = 0;
 		}
+		//c 옵션일 경우
 		else if(flag == C_OPT) {
+			//순환 구조이므로 파일 크기만큼 더해줌
 			location += file_size;
+			//파일 포인터 변경
 			*pos = location;
 		}
+		//옵션이 없거나 e 옵션일 경우, e 옵션은 시작 지점을 넘어서는 경우에 대한 기능이 없음
 		else if(flag == NO_OPT || flag == E_OPT)
 			return -1;
 	}
+	//끝 범위를 벗어날 
 	else if(location > file_size) {
+		//e 옵션의 경우
 		if(flag == E_OPT) {
+			//파일 크기를 넘어선 만큼이 추가해야 할 공간
 			diff = location - file_size;
+			//파일 포인트를 끝으로 옮김
 			*pos = file_size;
+			//공간 추가
 			for(i = 0; i < diff; i++)
 				write(fd, "0", 1);
 		}
+		//c 옵션일 경우
 		else if(flag == C_OPT) {
+			//순환 구조이므로 modulo 연산 수행
 			*pos = location % file_size;
 		}
+		//옵션이 없거나 re 옵션일 경우, re 옵션은 끝 지점을 넘어서는 경우에 대한 기능이 없음
 		else if(flag == NO_OPT || flag == RE_OPT)
 			return -1;
 	}
+	//범위 내의 경우
 	else
 		*pos = location;
 
