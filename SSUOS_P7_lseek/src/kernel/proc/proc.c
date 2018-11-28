@@ -372,6 +372,7 @@ void lseek_proc(void *aux , void *filename)
 		return;
 
 	if(arg[0] == 0) {
+		lseek(fd, 0, SEEK_SET, arg);
 		write(fd , "ssuos ",6);
 		//if you add lseek() system call , remove the '//'
 		printk ("%d\n", lseek(fd, -3, SEEK_CUR, NULL));
@@ -383,42 +384,95 @@ void lseek_proc(void *aux , void *filename)
 		read(fd, buf, 9);
 		printk("%s\n", buf);
 	}
-	//ssuworld 가 정확히 출력되어야 함
-	// 옵션에 대한 시나리오 및 검증할 코드 아래에 추가
-	// 각 옵션에 대해 파일 크기 및 내용이 정확하게 채워지는지 보여야 함
-	/*   option  */
 	else if(!strcmp(arg, "-e")) {
+		lseek(fd, 0, SEEK_SET, NULL);
 		write(fd, "ssuos", 5);
 
-		fp = lseek(fd, 4, SEEK_SET, arg);
-		file_size = lseek(fd, 0, SEEK_END, arg);
+		fp = lseek(fd, 4, SEEK_SET, NULL);
+		printk("current location of file pointer = %d\n", fp);
+		file_size = lseek(fd, 0, SEEK_END, NULL);
 		printk("current file size = %d\n", file_size);
-		lseek(fd, fp, SEEK_SET, arg);
-		printk("current location of file pointer = %d\n\n", fp);
 
-		printk("move 4 from SEEK_CUR\n\n");
-
+		printk("offset 4 from SEEK_CUR\n");
 		fp = lseek(fd, 4, SEEK_CUR, arg);
-		file_size = lseek(fd, 0, SEEK_END, arg);
+		printk("current location of file pointer = %d\n", fp);
+		file_size = lseek(fd, 0, SEEK_END, NULL);
 		printk("current file size = %d\n", file_size);
-		lseek(fd, fp, SEEK_SET, arg);
-		printk("current location of file pointer = %d\n\n", fp);
 
-		printk("move -1 from SEEK_SET\n\n");
+		lseek(fd, 0, SEEK_SET, NULL);
+		read(fd, buf, file_size);
+		printk("%s\n", buf);
+
+		printk("offset -1 from SEEK_SET\n");
 		fp = lseek(fd, -1, SEEK_SET, arg);
-		printk("current location of file pointer = %d\n\n", fp);
+		printk("current location of file pointer = %d\n", fp);
+	}
+	else if(!strcmp(arg, "-a")) {
+		lseek(fd, 0, SEEK_SET, NULL);
+		write(fd , "ssuos", 5);
 
-		lseek(fd, 0, SEEK_SET, arg);
+		fp = lseek(fd, 3, SEEK_SET, NULL);
+		printk("current location of file pointer = %d\n", fp);
+		file_size = lseek(fd, 0, SEEK_END, NULL);
+		printk("current file size = %d\n", file_size);
+
+		lseek(fd, fp, SEEK_SET, NULL);
+		printk("offset 2 from SEEK_CUR\n");
+		fp = lseek(fd, 2, SEEK_CUR, arg);
+		printk("current location of file pointer = %d\n", fp);
+		file_size = lseek(fd, 0, SEEK_END, NULL);
+		printk("current file size = %d\n", file_size);
+
+		lseek(fd, 0, SEEK_SET, NULL);
+		memset(buf, 0x00, BUFSIZ);
+		read(fd, buf, file_size);
+		printk("%s\n", buf);
+
+		printk("offset 3 from SEEK_SET\n");
+		fp = lseek(fd, 3, SEEK_SET, arg);
+		printk("current location of file pointer = %d\n", fp);
+
+		file_size = lseek(fd, 0, SEEK_END, NULL);
+		printk("current file size = %d\n", file_size);
+
+		lseek(fd, 0, SEEK_SET, NULL);
+		memset(buf, 0x00, BUFSIZ);
+		read(fd, buf, file_size);
+		printk("%s\n", buf);
+
+		printk("offset 1 from SEEK_END\n");
+		fp = lseek(fd, 1, SEEK_END, arg);
+		printk("current location of file pointer = %d\n", fp);
+
+		file_size = lseek(fd, 0, SEEK_END, NULL);
+		printk("current file size = %d\n", file_size);
+
+		lseek(fd, 0, SEEK_SET, NULL);
+		memset(buf, 0x00, BUFSIZ);
+		read(fd, buf, file_size);
+		printk("%s\n", buf);
+
+		fp = lseek(fd, 4, SEEK_SET, NULL);
+		printk("current location of file pointer = %d\n", fp);
+
+		printk("offset -2 from SEEK_CUR\n");
+		fp = lseek(fd, -2, SEEK_CUR, arg);
+		printk("current location of file pointer = %d\n", fp);
+
+		file_size = lseek(fd, 0, SEEK_END, NULL);
+		printk("current file size = %d\n", file_size);
+
+		lseek(fd, 0, SEEK_SET, NULL);
+		memset(buf, 0x00, BUFSIZ);
 		read(fd, buf, file_size);
 		printk("%s\n", buf);
 	}
-	else if(!strcmp(arg, "-a")) {
-		write(fd , "ssuos", 5);
-	}
 	else if(!strcmp(arg, "-re")) {
+		lseek(fd, 0, SEEK_SET, arg);
 		write(fd , "ssuos", 5);
 	}
 	else if(!strcmp(arg, "-c")) {
+		lseek(fd, 0, SEEK_SET, arg);
 		write(fd , "ssuos", 5);
 	}
 	else
