@@ -364,23 +364,41 @@ void lseek_proc(void *aux , void *filename)
 
 	char buf[BUFSIZ] = {0};
 	int fd;
-	fd = open(filename, O_RDWR);
-	if (fd < 0 )return;
-	write(fd , "ssuos ",6);
-	//if you add lseek() system call , remove the '//'
-	printk ("%d\n", lseek(fd, -3, SEEK_CUR, NULL));
-	write(fd, "world",5);
-	lseek(fd, 0, SEEK_SET, NULL);
-	read(fd , buf, 8);
-	printk("%s\n", buf);
-	lseek(fd, -9, SEEK_END, NULL);
-	read(fd, buf, 9);
-	printk("%s\n", buf);
+	char *arg = (char *)aux;
 
+	if((fd = open(filename, O_RDWR)) < 0)
+		return;
+
+	if(arg[0] == 0) {
+		write(fd , "ssuos ",6);
+		//if you add lseek() system call , remove the '//'
+		printk ("%d\n", lseek(fd, -3, SEEK_CUR, NULL));
+		write(fd, "world", 5);
+		lseek(fd, 0, SEEK_SET, NULL);
+		read(fd , buf, 8);
+		printk("%s\n", buf);
+		lseek(fd, -9, SEEK_END, NULL);
+		read(fd, buf, 9);
+		printk("%s\n", buf);
+	}
 	//ssuworld 가 정확히 출력되어야 함
 	// 옵션에 대한 시나리오 및 검증할 코드 아래에 추가
 	// 각 옵션에 대해 파일 크기 및 내용이 정확하게 채워지는지 보여야 함
 	/*   option  */
+	else if(!strcmp(arg, "-e")) {
+		write(fd , "ssuos", 5);
+	}
+	else if(!strcmp(arg, "-a")) {
+		write(fd , "ssuos", 5);
+	}
+	else if(!strcmp(arg, "-re")) {
+		write(fd , "ssuos", 5);
+	}
+	else if(!strcmp(arg, "-c")) {
+		write(fd , "ssuos", 5);
+	}
+	else
+		printk("error: invalid option '%s'\n", aux);
 }
 
 
@@ -492,7 +510,7 @@ void shell_proc(void* aux)
 			 * lseek_proc()의 두 번째 파라미터에 filename을 받기 위해
 			 * token[1]과 token[2]의 위치 변경
 			 */
-			if(strncmp(token[0], "test", BUFSIZ) == 0)
+			if(strncmp(token[0], "test", BUFSIZ) == 0 && token[1][0] != '-')
 				pid = fork(cmdlist[i].func, token[2], token[1]);
 			else
 				pid = fork(cmdlist[i].func, token[1], token[2]);
