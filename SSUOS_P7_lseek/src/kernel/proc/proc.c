@@ -495,6 +495,17 @@ void lseek_proc(void *aux , void *filename)
 	else if(!strcmp(arg, "-c")) {
 		lseek(fd, 0, SEEK_SET, arg);
 		write(fd , "ssuos", 5);
+
+		file_size = lseek(fd, 0, SEEK_END, NULL);
+		printk("current file size = %d\n", file_size);
+
+		printk("offset 2 from SEEK_END\n");
+		fp = lseek(fd, 2, SEEK_END, arg);
+		printk("current location of file pointer = %d\n", fp);
+
+		printk("offset -3 from SEEK_CUR\n");
+		fp = lseek(fd, -3, SEEK_CUR, arg);
+		printk("current location of file pointer = %d\n", fp);
 	}
 	else
 		printk("error: invalid option '%s'\n", aux);
