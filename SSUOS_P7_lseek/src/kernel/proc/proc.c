@@ -365,6 +365,8 @@ void lseek_proc(void *aux , void *filename)
 	char buf[BUFSIZ] = {0};
 	int fd;
 	char *arg = (char *)aux;
+	int file_size;
+	int fp;
 
 	if((fd = open(filename, O_RDWR)) < 0)
 		return;
@@ -386,7 +388,29 @@ void lseek_proc(void *aux , void *filename)
 	// 각 옵션에 대해 파일 크기 및 내용이 정확하게 채워지는지 보여야 함
 	/*   option  */
 	else if(!strcmp(arg, "-e")) {
-		write(fd , "ssuos", 5);
+		write(fd, "ssuos", 5);
+
+		fp = lseek(fd, 4, SEEK_SET, arg);
+		file_size = lseek(fd, 0, SEEK_END, arg);
+		printk("current file size = %d\n", file_size);
+		lseek(fd, fp, SEEK_SET, arg);
+		printk("current location of file pointer = %d\n\n", fp);
+
+		printk("move 4 from SEEK_CUR\n\n");
+
+		fp = lseek(fd, 4, SEEK_CUR, arg);
+		file_size = lseek(fd, 0, SEEK_END, arg);
+		printk("current file size = %d\n", file_size);
+		lseek(fd, fp, SEEK_SET, arg);
+		printk("current location of file pointer = %d\n\n", fp);
+
+		printk("move -1 from SEEK_SET\n\n");
+		fp = lseek(fd, -1, SEEK_SET, arg);
+		printk("current location of file pointer = %d\n\n", fp);
+
+		lseek(fd, 0, SEEK_SET, arg);
+		read(fd, buf, file_size);
+		printk("%s\n", buf);
 	}
 	else if(!strcmp(arg, "-a")) {
 		write(fd , "ssuos", 5);
