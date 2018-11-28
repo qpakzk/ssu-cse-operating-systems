@@ -275,8 +275,6 @@ int generic_lseek(int fd, int offset, int whence, char *opt)
 				write(fd, "0", 1);
 			write(fd, buf, file_size);
 
-			cursor->inode->sn_size += diff;
-			file_size = cursor->inode->sn_size;
 			*pos = 0;
 		}
 		else if(flag == C_OPT) {
@@ -292,8 +290,6 @@ int generic_lseek(int fd, int offset, int whence, char *opt)
 			*pos = file_size;
 			for(i = 0; i < diff; i++)
 				write(fd, "0", 1);
-			cursor->inode->sn_size = location;
-			file_size = cursor->inode->sn_size;
 		}
 		else if(flag == C_OPT) {
 			*pos = location % file_size;
