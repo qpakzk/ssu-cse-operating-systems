@@ -394,6 +394,7 @@ void lseek_proc(void *aux , void *filename)
 		printk("current file size = %d\n", file_size);
 
 		printk("offset 4 from SEEK_CUR\n");
+		lseek(fd, fp, SEEK_SET, NULL);
 		fp = lseek(fd, 4, SEEK_CUR, arg);
 		printk("current location of file pointer = %d\n", fp);
 		file_size = lseek(fd, 0, SEEK_END, NULL);
@@ -470,6 +471,26 @@ void lseek_proc(void *aux , void *filename)
 	else if(!strcmp(arg, "-re")) {
 		lseek(fd, 0, SEEK_SET, arg);
 		write(fd , "ssuos", 5);
+
+		fp = lseek(fd, 2, SEEK_SET, NULL);
+		printk("current location of file pointer = %d\n", fp);
+		file_size = lseek(fd, 0, SEEK_END, NULL);
+		printk("current file size = %d\n", file_size);
+
+		printk("offset -5 from SEEK_CUR\n");
+		lseek(fd, fp, SEEK_SET, NULL);
+		fp = lseek(fd, -5, SEEK_CUR, arg);
+		printk("current location of file pointer = %d\n", fp);
+		file_size = lseek(fd, 0, SEEK_END, NULL);
+		printk("current file size = %d\n", file_size);
+
+		lseek(fd, 0, SEEK_SET, NULL);
+		read(fd, buf, file_size);
+		printk("%s\n", buf);
+
+		printk("offset 1 from SEEK_END\n");
+		fp = lseek(fd, 1, SEEK_END, arg);
+		printk("current location of file pointer = %d\n", fp);
 	}
 	else if(!strcmp(arg, "-c")) {
 		lseek(fd, 0, SEEK_SET, arg);
