@@ -1,0 +1,7 @@
+./kbd.c
+./ide.c
+./block.c
+./pit.c
+./console.c
+./device.c
+./partition.c
