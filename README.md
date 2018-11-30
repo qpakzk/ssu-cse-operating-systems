@@ -11,4 +11,4 @@ There are 8 projects I solved in this class.
 * [project 5](ssuos_p5) : Virtual Memory
 * [project 6](ssuos_p6) : Virtual File System
 * [project 7](ssuos_p7) : File System &#183; System Call
-* project 8
+* [project 8](2018SSUOS_P8) : Indirect Block
