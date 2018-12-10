@@ -135,8 +135,31 @@ int lbn_to_pbn(struct inode * in, uint32_t lbn )
 {
 	struct ssu_fs * fs = in->sn_fs;
 	int pbn=0;
-	//complete this function for indirect block.
 
+	if(lbn < NUM_DIRECT)
+		pbn = in->sn_directblock[lbn];
+	else {
+		int blk_idx = (lbn - NUM_DIRECT) / 1024;
+		int blkoff = (lbn - NUM_DIRECT) % 1024;
+
+		if(in->cnt_data_block <= blk_idx) {
+			balloc(fs->fs_blkmap, &(in->sn_indirectblock[blk_idx]));
+			in->cnt_data_block++;
+			sync_bitmapblock(fs);
+
+			memset(tmpblock_indirect, 0, SSU_BLOCK_SIZE);
+			fs_readblock(fs, in->sn_indirectblock[blk_idx], tmpblock_indirect);
+			balloc(fs->fs_blkmap, &pbn);
+			sync_bitmapblock(fs);
+
+			memcpy(tmpblock_indirect + blkoff * sizeof(int), &pbn, sizeof(int));
+			fs_writeblock(fs, in->sn_indirectblock[blk_idx], tmpblock_indirect);
+		}
+
+		memset(tmpblock_indirect, 0, SSU_BLOCK_SIZE);
+		fs_readblock(fs, in->sn_indirectblock[blk_idx], tmpblock_indirect);
+		memcpy(&pbn, tmpblock_indirect + blkoff * sizeof(int), sizeof(int));
+	}
 	return pbn;
 }
 
