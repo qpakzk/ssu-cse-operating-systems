@@ -136,8 +136,17 @@ int lbn_to_pbn(struct inode * in, uint32_t lbn )
 	struct ssu_fs * fs = in->sn_fs;
 	int pbn=0;
 
-	if(lbn < NUM_DIRECT)
+	if(lbn < NUM_DIRECT) {
 		pbn = in->sn_directblock[lbn];
+
+		if(pbn == 0) {
+			balloc(fs->fs_blkmap, &pbn);
+			in->sn_nlink++;
+			sync_bitmapblock(fs);
+
+			in->sn_directblock[lbn] = pbn;
+		}
+	}
 	else {
 		int blk_idx = (lbn - NUM_DIRECT) / 1024;
 		int blkoff = (lbn - NUM_DIRECT) % 1024;
@@ -150,15 +159,26 @@ int lbn_to_pbn(struct inode * in, uint32_t lbn )
 			memset(tmpblock_indirect, 0, SSU_BLOCK_SIZE);
 			fs_readblock(fs, in->sn_indirectblock[blk_idx], tmpblock_indirect);
 			balloc(fs->fs_blkmap, &pbn);
+			in->sn_nlink++;
 			sync_bitmapblock(fs);
 
 			memcpy(tmpblock_indirect + blkoff * sizeof(int), &pbn, sizeof(int));
 			fs_writeblock(fs, in->sn_indirectblock[blk_idx], tmpblock_indirect);
 		}
+		else {
+			memset(tmpblock_indirect, 0, SSU_BLOCK_SIZE);
+			fs_readblock(fs, in->sn_indirectblock[blk_idx], tmpblock_indirect);
+			memcpy(&pbn, tmpblock_indirect + blkoff * sizeof(int), sizeof(int));
 
-		memset(tmpblock_indirect, 0, SSU_BLOCK_SIZE);
-		fs_readblock(fs, in->sn_indirectblock[blk_idx], tmpblock_indirect);
-		memcpy(&pbn, tmpblock_indirect + blkoff * sizeof(int), sizeof(int));
+			if(pbn == 0) {
+				balloc(fs->fs_blkmap, &pbn);
+				in->sn_nlink++;
+				sync_bitmapblock(fs);
+
+				memcpy(tmpblock_indirect + blkoff * sizeof(int), &pbn, sizeof(int));
+				fs_writeblock(fs, in->sn_indirectblock[blk_idx], tmpblock_indirect);
+			}
+		}
 	}
 	return pbn;
 }
