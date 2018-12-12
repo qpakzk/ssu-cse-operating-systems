@@ -180,6 +180,12 @@ int inode_read(struct inode * in, uint32_t offset, char * buf, int len)
 		}
 	}
 
+	//lbn과 pbn의 시작과 마지막 오프셋 출력
+	printk("start_blkoff = %d\n", start_blkoff);
+	printk("end_blkoff = %d\n", end_blkoff);
+	printk("physical start_blkoff = %d\n", lbn_to_pbn(in, start_blkoff));
+	printk("physical end_blkoff = %d\n", lbn_to_pbn(in, end_blkoff));
+
 	return result;
 }
 
