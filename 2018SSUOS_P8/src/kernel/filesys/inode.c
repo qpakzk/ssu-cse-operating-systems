@@ -136,48 +136,59 @@ int lbn_to_pbn(struct inode * in, uint32_t lbn )
 	struct ssu_fs * fs = in->sn_fs;
 	int pbn=0;
 
+	//lbn이 direct block일 경우
 	if(lbn < NUM_DIRECT) {
+		//direct block의 인덱스
 		pbn = in->sn_directblock[lbn];
 
+		//direct block이 할당되어 있지 않을 경우
 		if(pbn == 0) {
+			//data block 할당
 			balloc(fs->fs_blkmap, &pbn);
-			in->sn_nlink++;
 			sync_bitmapblock(fs);
+			in->sn_nlink++;
 
 			in->sn_directblock[lbn] = pbn;
 		}
 	}
+	//lbn이 indirect block일 경우
 	else {
+		//indirect block의 인덱스
 		int blk_idx = (lbn - NUM_DIRECT) / 1024;
+		//indirect block의 오프셋
 		int blkoff = (lbn - NUM_DIRECT) % 1024;
 
-		if(in->cnt_data_block <= blk_idx) {
-			balloc(fs->fs_blkmap, &(in->sn_indirectblock[blk_idx]));
-			in->cnt_data_block++;
-			sync_bitmapblock(fs);
+		//in->cnt_data_block: indirect block으로 할당된 data block의 개수
+		//indirect block으로 할당되어 있지 않은 data block을 찾는 경우
+		if(in->cnt_data_block <= (lbn - NUM_DIRECT)) {
+			//indirect block이 할당되어 있지 않은 경우
+			if((in-> cnt_data_block == 0) ||
+				//필요로 하는 indirect block이 할당되어 있지 않은 경우
+				(((in->cnt_data_block - 1) / 1024) < blk_idx)) {
+				//indirect block 할당
+				//indirect block을 위한 block bitmap 설정
+				balloc(fs->fs_blkmap, &(in->sn_indirectblock[blk_idx]));
+				sync_bitmapblock(fs);
+			}
 
+			//indirect block을 read하여 tmpblock_indirect에 저장한다
 			memset(tmpblock_indirect, 0, SSU_BLOCK_SIZE);
 			fs_readblock(fs, in->sn_indirectblock[blk_idx], tmpblock_indirect);
-			balloc(fs->fs_blkmap, &pbn);
-			in->sn_nlink++;
-			sync_bitmapblock(fs);
 
+			//indirect block으로 할당할 data block의 block bitmap 설정
+			balloc(fs->fs_blkmap, &pbn);
+			sync_bitmapblock(fs);
+			in->cnt_data_block++;
+
+			//indirect block으로 할당한 data block의 pbn을 indirect block에 write한다
 			memcpy(tmpblock_indirect + blkoff * sizeof(int), &pbn, sizeof(int));
 			fs_writeblock(fs, in->sn_indirectblock[blk_idx], tmpblock_indirect);
 		}
+		//indirect block을 통해 lbn에 매칭되는 data block 찾기
 		else {
 			memset(tmpblock_indirect, 0, SSU_BLOCK_SIZE);
 			fs_readblock(fs, in->sn_indirectblock[blk_idx], tmpblock_indirect);
 			memcpy(&pbn, tmpblock_indirect + blkoff * sizeof(int), sizeof(int));
-
-			if(pbn == 0) {
-				balloc(fs->fs_blkmap, &pbn);
-				in->sn_nlink++;
-				sync_bitmapblock(fs);
-
-				memcpy(tmpblock_indirect + blkoff * sizeof(int), &pbn, sizeof(int));
-				fs_writeblock(fs, in->sn_indirectblock[blk_idx], tmpblock_indirect);
-			}
 		}
 	}
 	return pbn;
