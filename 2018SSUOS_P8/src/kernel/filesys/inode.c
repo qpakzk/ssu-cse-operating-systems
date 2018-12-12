@@ -138,23 +138,49 @@ int inode_write(struct inode *in, uint32_t offset, char * buf, int len)
 
 int inode_read(struct inode * in, uint32_t offset, char * buf, int len)
 {
-
-	//modify the inode_write to activate indirect blocks.
 	int result=0;
 	struct ssu_fs * fs = in->sn_fs;
-	uint32_t blkoff = offset / SSU_BLOCK_SIZE;
-	uint32_t res_off = offset % SSU_BLOCK_SIZE;
-
+	//시작 lbn
+	uint32_t start_blkoff = offset / SSU_BLOCK_SIZE;
+	//시작 datablock의 오프셋
+	uint32_t start_off = offset % SSU_BLOCK_SIZE;
+	//마지막 lbn
+	uint32_t end_blkoff = (offset + len) / SSU_BLOCK_SIZE;
+	//마지막 datablock의 오프셋
+	uint32_t end_off = (offset + len) % SSU_BLOCK_SIZE;
+	//오프셋이 파일 크기를 초과하면 안됨
 	if(offset > in->sn_size)
 		return -1;
-	
-	memset(tmpblock, 0, SSU_BLOCK_SIZE);
-	fs_readblock(fs, in->sn_directblock[blkoff], tmpblock);
 
-	memcpy(buf, tmpblock + res_off, len);
+	//data block 개수만큼 read
+	for(int lbn = start_blkoff, i = 0; lbn <= end_blkoff; lbn++, i++) {
+		int pbn = lbn_to_pbn(in, lbn);
+		int off;
+		//pbn에 해당하는 data block을 read
+		memset(tmpblock, 0, SSU_BLOCK_SIZE);
+		fs_readblock(fs, pbn, tmpblock);
+
+		//한 블록인 경우
+		if(lbn == start_blkoff && lbn == end_blkoff)
+			memcpy(buf, tmpblock + start_off, len);
+		//첫 블록인 경우
+		else if(lbn == start_blkoff)
+			memcpy(buf, tmpblock + start_off, SSU_BLOCK_SIZE - start_off);
+		//마지막 블록인 경우
+		else if(lbn == end_blkoff) {
+			off = len - end_off;
+			memcpy(buf + off, tmpblock, end_off);
+		}
+		//중간 블록인 경우
+		else {
+			off = SSU_BLOCK_SIZE - start_off;
+			if(i > 1)
+				off += (i - 1) * SSU_BLOCK_SIZE;
+			memcpy(buf + off, tmpblock, SSU_BLOCK_SIZE);
+		}
+	}
+
 	return result;
-
-	//
 }
 
 int lbn_to_pbn(struct inode * in, uint32_t lbn )
