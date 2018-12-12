@@ -77,37 +77,63 @@ struct inode* inode_create(struct ssu_fs *fs, uint16_t type)
 
 int inode_write(struct inode *in, uint32_t offset, char * buf, int len)
 {
-
-	//modify the inode_write to activate indirect blocks.
 	int result=0;
 	struct ssu_fs * fs = in->sn_fs;
-	uint32_t blkoff = offset / SSU_BLOCK_SIZE;
-	uint32_t res_off = offset % SSU_BLOCK_SIZE;
-
+	//시작 lbn
+	uint32_t start_blkoff = offset / SSU_BLOCK_SIZE;
+	//시작 datablock의 오프셋
+	uint32_t start_off = offset % SSU_BLOCK_SIZE;
+	//마지막 lbn
+	uint32_t end_blkoff = (offset + len) / SSU_BLOCK_SIZE;
+	//마지막 datablock의 오프셋
+	uint32_t end_off = (offset + len) % SSU_BLOCK_SIZE;
+	//오프셋이 파일 크기를 초과하면 안됨
 	if(offset > in->sn_size)
 		return -1;
 
-	memset(tmpblock, 0, SSU_BLOCK_SIZE);
-	if(res_off != 0 || blkoff < in->sn_nlink)
-	{
-		fs_readblock(fs, in->sn_directblock[blkoff], tmpblock);
-	}
-	else
-	{
-		balloc(fs->fs_blkmap, &(in->sn_directblock[blkoff]));
-		in->sn_nlink++;
-		sync_bitmapblock(fs);
+	//data block 개수만큼 write
+	for(int lbn = start_blkoff, i = 0; lbn <= end_blkoff; lbn++, i++) {
+		int pbn = lbn_to_pbn(in, lbn);
+		int off;
+		//pbn에 해당하는 data block을 read
+		memset(tmpblock, 0, SSU_BLOCK_SIZE);
+		fs_readblock(fs, pbn, tmpblock);
+
+		//한 블록인 경우
+		if(lbn == start_blkoff && lbn == end_blkoff)
+			memcpy(tmpblock + start_off, buf, len);
+		//첫 블록인 경우
+		else if(lbn == start_blkoff)
+			memcpy(tmpblock + start_off, buf, SSU_BLOCK_SIZE - start_off);
+		//마지막 블록인 경우
+		else if(lbn == end_blkoff) {
+			off = len - end_off;
+			memcpy(tmpblock, buf + off, end_off);
+		}
+		//중간 블록인 경우
+		else {
+			off = SSU_BLOCK_SIZE - start_off;
+			if(i > 1)
+				off += (i - 1) * SSU_BLOCK_SIZE;
+			memcpy(tmpblock, buf + off, SSU_BLOCK_SIZE);
+		}
+
+		//lbn에 해당하는 pbn에 write
+		fs_writeblock(fs, pbn, tmpblock);
 	}
 
-	memcpy(tmpblock + res_off, buf, len);
-
-	fs_writeblock(fs, in->sn_directblock[blkoff], tmpblock);
+	//파일 크기 갱신
 	if(in->sn_size < offset+len)
 		in->sn_size = offset+len;
 	sync_inode(fs, in);
 
+	//lbn과 pbn의 시작과 마지막 오프셋 출력
+	printk("start_blkoff = %d\n", start_blkoff);
+	printk("end_blkoff = %d\n", end_blkoff);
+	printk("physical start_blkoff = %d\n", lbn_to_pbn(in, start_blkoff));
+	printk("physical end_blkoff = %d\n", lbn_to_pbn(in, end_blkoff));
+
 	return result;
-	//
 }
 
 int inode_read(struct inode * in, uint32_t offset, char * buf, int len)
