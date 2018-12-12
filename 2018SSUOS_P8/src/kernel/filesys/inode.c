@@ -195,6 +195,7 @@ int lbn_to_pbn(struct inode * in, uint32_t lbn )
 				//indirect block을 위한 block bitmap 설정
 				balloc(fs->fs_blkmap, &(in->sn_indirectblock[blk_idx]));
 				sync_bitmapblock(fs);
+				in->sn_nlink++;
 			}
 
 			//indirect block을 read하여 tmpblock_indirect에 저장한다
@@ -205,6 +206,7 @@ int lbn_to_pbn(struct inode * in, uint32_t lbn )
 			balloc(fs->fs_blkmap, &pbn);
 			sync_bitmapblock(fs);
 			in->cnt_data_block++;
+			in->sn_nlink++;
 
 			//indirect block으로 할당한 data block의 pbn을 indirect block에 write한다
 			memcpy(tmpblock_indirect + blkoff * sizeof(int), &pbn, sizeof(int));
