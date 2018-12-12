@@ -353,15 +353,14 @@ void ls_proc(void *aux)
 
 void cat_proc(void *aux)
 {
-	//if you complete inode_write() & inode_read() , remove below '/*'& '*/' in this section.
-	/*char buf[8300];
+	char buf[8300];
 	int fd;
 	fd = open((char *)aux,O_RDONLY);
 	if (fd < 0) return;
 	memset(buf , 0 , 8300);
 	read(fd, buf, 8300);
 	*(buf+8200+19) = 0;
-	printk("%s\n",buf+8200);*/
+	printk("%s\n",buf+8200);
 }
 
 
